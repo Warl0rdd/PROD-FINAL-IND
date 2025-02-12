@@ -5,7 +5,7 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/spf13/viper"
 	"solution/cmd/app"
-	// v1 "solution/internal/adapters/controller/api/v1"
+	v1 "solution/internal/adapters/controller/api/v1"
 )
 
 func Setup(app *app.App) {
@@ -15,6 +15,8 @@ func Setup(app *app.App) {
 		app.Fiber.Use(logger.New(logger.Config{TimeZone: viper.GetString("settings.timezone")}))
 	}
 
-	// Setup api v1 routes
-	//apiV1 := app.Fiber.Group("/api")
+	router := app.Fiber.Group("")
+
+	clientHandler := v1.NewClientHandler(app)
+	clientHandler.Setup(router)
 }

@@ -3,3 +3,4 @@
 *.dll
 /local-dev-compose.yml
 /.env.local
+/gen

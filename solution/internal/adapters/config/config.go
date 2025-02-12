@@ -49,8 +49,6 @@ func Configure() *Config {
 		viper.GetString("settings.timezone"),
 	)
 
-	logger.Log.Debugf("DSN String: %s", dsn)
-
 	logger.Log.Debug("Configuring database")
 	pgxConfig, err := pgxpool.ParseConfig(dsn)
 
@@ -72,8 +70,6 @@ func Configure() *Config {
 	} else {
 		logger.Log.Info("Connected to postgres")
 	}
-
-	logger.Log.Info("Running migrations...")
 
 	logger.Log.Info("Database initialized")
 
