@@ -1,0 +1,20 @@
+service: # изменять в случае изменений в .env
+  backend:
+    certificate:
+      cert-file: "/etc/letsencrypt/live/npm-1/fullchain.pem"
+      key-file: "/etc/letsencrypt/live/npm-1/privkey.pem"
+
+    port: 3000
+
+    jwt:
+      secret: "super-strong-secret"
+      access-token-expiration: "60" # в минутах
+      refresh-token-expiration: "43200" #  30 дней в минутах
+
+  database:
+    ssl-mode: "disable"
+
+settings:
+  debug: true # включение / выключение дебага
+  listen-tls: false # false - http, true - https (при первом старте до выпуска сертификатов - ставить false, после - true)
+  timezone: "GMT+3" # часовой пояс в формате "GMT+3"
