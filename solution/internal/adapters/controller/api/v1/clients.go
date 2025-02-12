@@ -62,7 +62,7 @@ func (h *ClientHandler) CreateClients(c fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(DTOs)
+	return c.Status(fiber.StatusCreated).JSON(DTOs)
 }
 
 func (h *ClientHandler) GetClientById(c fiber.Ctx) error {

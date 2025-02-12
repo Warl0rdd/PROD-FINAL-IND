@@ -60,7 +60,7 @@ func (h *AdvertiserHandler) CreateAdvertiser(c fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(DTOs)
+	return c.Status(fiber.StatusCreated).JSON(DTOs)
 }
 
 func (h *AdvertiserHandler) GetAdvertiserById(c fiber.Ctx) error {

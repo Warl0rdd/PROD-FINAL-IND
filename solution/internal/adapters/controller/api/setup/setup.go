@@ -25,4 +25,7 @@ func Setup(app *app.App) {
 
 	mlScoreHandler := v1.NewMlScoreHandler(app)
 	mlScoreHandler.Setup(router)
+
+	campaignHandler := v1.NewCampaignHandler(app)
+	campaignHandler.Setup(router)
 }
