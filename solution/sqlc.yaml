@@ -12,10 +12,27 @@ sql:
             go_type:
               import: "github.com/google/uuid"
               type: "UUID"
-#  - engine: "postgresql"
-#    queries: "sql/books/query.sql"
-#    schema: "sql/books/schema.sql"
-#    gen:
-#      go:
-#        out: "out/books"
-#        sql_package: "pgx/v5"
+  - engine: "postgresql"
+    queries: "db/queries/advertisers.sql"
+    schema: "db/migrations"
+    gen:
+      go:
+        out: "gen/advertisers"
+        sql_package: "pgx/v5"
+        overrides:
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+  - engine: "postgresql"
+    queries: "db/queries/ml_scores.sql"
+    schema: "db/migrations"
+    gen:
+      go:
+        out: "gen/ml_scores"
+        sql_package: "pgx/v5"
+        overrides:
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"

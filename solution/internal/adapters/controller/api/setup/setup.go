@@ -19,4 +19,10 @@ func Setup(app *app.App) {
 
 	clientHandler := v1.NewClientHandler(app)
 	clientHandler.Setup(router)
+
+	advertiserHandler := v1.NewAdvertiserHandler(app)
+	advertiserHandler.Setup(router)
+
+	mlScoreHandler := v1.NewMlScoreHandler(app)
+	mlScoreHandler.Setup(router)
 }

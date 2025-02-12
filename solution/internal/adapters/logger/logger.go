@@ -73,10 +73,8 @@ func (t *ZapQueryTracer) TraceQueryStart(
 	_ *pgx.Conn,
 	data pgx.TraceQueryStartData,
 ) context.Context {
-	t.Log.Infow("Начало выполнения запроса",
-		"sql", data.SQL,
-		"args", data.Args,
-	)
+	t.Log.Infof("Запрос: %s", data.SQL)
+	t.Log.Infof("Параметры: %v", data.Args)
 	return ctx
 }
 
