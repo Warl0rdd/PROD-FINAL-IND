@@ -14,7 +14,7 @@ rel - Релевантность (ml_score)
 */
 
 func AdScore(cpi, cpc, rel float64) float64 {
-	return (2.0/3.0)*(logistic(rel)*cpc+(1.0-logistic(rel))*cpi) + rel/3.0
+	return logistic(rel)*cpc + (1.0-logistic(rel))*cpi
 }
 
 func logistic(x float64) float64 {
