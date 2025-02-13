@@ -34,4 +34,7 @@ func Setup(app *app.App) {
 
 	adsHandler := v1.NewAdsHandler(app)
 	adsHandler.Setup(router)
+
+	statsHandler := v1.NewStatsHandler(app)
+	statsHandler.Setup(router)
 }
