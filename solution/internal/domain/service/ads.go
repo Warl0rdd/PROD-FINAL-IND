@@ -12,6 +12,8 @@ import (
 
 type AdsStorage interface {
 	GetEligibleAds(ctx context.Context, arg postgres.GetEligibleAdsParams) ([]postgres.GetEligibleAdsRow, error)
+	AddImpression(ctx context.Context, arg postgres.AddImpressionParams) error
+	AddClick(ctx context.Context, arg postgres.AddClickParams) error
 }
 
 type adsService struct {
@@ -69,6 +71,14 @@ func (s *adsService) GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDT
 
 	if maxKey == 0.0 {
 		return dto.AdDTO{}, errorz.NotFound
+	}
+
+	if errImp := s.adsStorage.AddImpression(ctx, postgres.AddImpressionParams{
+		ClientID:   uuid.MustParse(adsDTO.ClientID),
+		CampaignID: uuid.MustParse(scores[maxKey].AdID),
+		Day:        int32(day),
+	}); errImp != nil {
+		return dto.AdDTO{}, errImp
 	}
 
 	return scores[maxKey], nil

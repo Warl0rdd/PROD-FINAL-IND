@@ -16,8 +16,41 @@ func NewAdsStorage(db *pgxpool.Pool) *adsStorage {
 	}
 }
 
-const getEligibleAds = `-- name: GetEligibleAds :many
+const addClick = `-- name: AddClick :exec
+INSERT INTO clicks (campaign_id, client_id, day)
+VALUES ($1, $2, $3)
+ON CONFLICT (campaign_id, client_id) DO NOTHING
+`
 
+type AddClickParams struct {
+	CampaignID uuid.UUID
+	ClientID   uuid.UUID
+	Day        int32
+}
+
+func (s *adsStorage) AddClick(ctx context.Context, arg AddClickParams) error {
+	_, err := s.db.Exec(ctx, addClick, arg.CampaignID, arg.ClientID, arg.Day)
+	return err
+}
+
+const addImpression = `-- name: AddImpression :exec
+INSERT INTO impressions (campaign_id, client_id, day)
+VALUES ($1, $2, $3)
+ON CONFLICT (campaign_id, client_id) DO NOTHING
+`
+
+type AddImpressionParams struct {
+	CampaignID uuid.UUID
+	ClientID   uuid.UUID
+	Day        int32
+}
+
+func (s *adsStorage) AddImpression(ctx context.Context, arg AddImpressionParams) error {
+	_, err := s.db.Exec(ctx, addImpression, arg.CampaignID, arg.ClientID, arg.Day)
+	return err
+}
+
+const getEligibleAds = `-- name: GetEligibleAds :many
 SELECT c.id,
        c.advertiser_id,
        c.cost_per_impression,
@@ -37,7 +70,13 @@ WHERE CASE
   AND c.age_to >= cl.age
   AND CASE WHEN c.location = '' THEN TRUE WHEN c.location != 'ALL' THEN cl.location = c.location END
   AND c.start_date <= $2
-  AND c.end_date >= $2;
+  AND c.end_date >= $2
+  AND c.clicks_count < c.clicks_limit
+  AND c.impressions_count < c.impression_limit
+  AND NOT EXISTS (SELECT 1
+                  FROM impressions i
+                  WHERE i.campaign_id = c.id
+                    AND i.client_id = $1);
 `
 
 type GetEligibleAdsParams struct {

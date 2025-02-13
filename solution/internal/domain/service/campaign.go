@@ -144,6 +144,8 @@ func (s *CampaignService) GetCampaignWithPagination(ctx context.Context, campaig
 	return result, nil
 }
 
+// TODO проверка на дату старта компании
+
 func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.UpdateCampaignDTO) (dto.CampaignDTO, error) {
 	campaign, err := s.campaignStorage.UpdateCampaign(ctx, postgres.UpdateCampaignParams{
 		ID:                uuid.MustParse(campaignDTO.CampaignID),
