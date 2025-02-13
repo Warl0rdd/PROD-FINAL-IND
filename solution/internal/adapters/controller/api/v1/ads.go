@@ -13,6 +13,7 @@ import (
 
 type AdsService interface {
 	GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDTO, error)
+	Click(ctx context.Context, clickDTO dto.AddClickDTO) error
 }
 
 type AdsHandler struct {
@@ -58,6 +59,42 @@ func (h *AdsHandler) GetAds(c fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(ads)
 }
 
+func (h *AdsHandler) Click(c fiber.Ctx) error {
+	var clickDTO dto.AddClickDTO
+
+	if err := c.Bind().Body(&clickDTO); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	if err := c.Bind().URI(&clickDTO); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	if err := h.validator.ValidateData(clickDTO); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
+			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	err := h.adsService.Click(c.Context(), clickDTO)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.HTTPError{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusNoContent).Send(nil)
+}
+
 func (h *AdsHandler) Setup(router fiber.Router) {
 	router.Get("/ads", h.GetAds)
+	router.Post("/ads/:adID/click", h.Click)
 }

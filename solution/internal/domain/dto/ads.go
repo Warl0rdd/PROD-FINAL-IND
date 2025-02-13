@@ -10,3 +10,8 @@ type AdDTO struct {
 	AdTitle      string `json:"ad_title"`
 	AdText       string `json:"ad_text"`
 }
+
+type AddClickDTO struct {
+	ClientID string `json:"client_id" validate:"required"`
+	AdID     string `params:"adId" validate:"required"`
+}

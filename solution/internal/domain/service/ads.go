@@ -83,3 +83,20 @@ func (s *adsService) GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDT
 
 	return scores[maxKey], nil
 }
+
+func (s *adsService) Click(ctx context.Context, clickDTO dto.AddClickDTO) error {
+	day, err := s.dayStorage.GetDay(ctx)
+	if err != nil {
+		return err
+	}
+
+	if errClick := s.adsStorage.AddClick(ctx, postgres.AddClickParams{
+		ClientID:   uuid.MustParse(clickDTO.ClientID),
+		CampaignID: uuid.MustParse(clickDTO.AdID),
+		Day:        int32(day),
+	}); errClick != nil {
+		return errClick
+	}
+
+	return nil
+}
