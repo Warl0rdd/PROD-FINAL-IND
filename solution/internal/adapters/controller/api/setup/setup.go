@@ -31,4 +31,7 @@ func Setup(app *app.App) {
 
 	dayHandler := v1.NewDayHandler(app)
 	dayHandler.Setup(router)
+
+	adsHandler := v1.NewAdsHandler(app)
+	adsHandler.Setup(router)
 }

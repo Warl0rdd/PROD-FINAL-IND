@@ -1,6 +1,7 @@
 package dto
 
 // TODO: validation
+// TODO: date validation
 
 type CampaignDTO struct {
 	CampaignID        string  `json:"campaign_id" validate:"required"`
