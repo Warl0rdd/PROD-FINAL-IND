@@ -28,4 +28,7 @@ func Setup(app *app.App) {
 
 	campaignHandler := v1.NewCampaignHandler(app)
 	campaignHandler.Setup(router)
+
+	dayHandler := v1.NewDayHandler(app)
+	dayHandler.Setup(router)
 }
