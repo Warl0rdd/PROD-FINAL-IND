@@ -162,7 +162,9 @@ func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.Up
 	}
 
 	if campaign.StartDate <= int32(day) {
-		return dto.CampaignDTO{}, errorz.Forbidden
+		if campaignDTO.ClicksLimit != 0 || campaignDTO.ImpressionsLimit != 0 {
+			return dto.CampaignDTO{}, errorz.Forbidden
+		}
 	}
 
 	updatedCampaign, err := s.campaignStorage.UpdateCampaign(ctx, postgres.UpdateCampaignParams{

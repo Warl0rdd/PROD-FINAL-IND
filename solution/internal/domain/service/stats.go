@@ -25,8 +25,6 @@ func NewStatsService(statsStorage StatsStorage) *StatsService {
 	}
 }
 
-// TODO проверка на параметры, которые можно/нельзя изменять после старта
-
 func (s *StatsService) GetDailyStatsByAdvertiserID(ctx context.Context, statsDTO dto.GetStatsByAdvertiserIDDTO) ([]dto.StatsDTO, error) {
 	stats, err := s.statsStorage.GetDailyStatsByAdvertiserID(ctx, uuid.MustParse(statsDTO.AdvertiserID))
 
