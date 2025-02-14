@@ -31,8 +31,6 @@ func NewClientHandler(app *app.App) *ClientHandler {
 	}
 }
 
-// TODO: testing
-
 func (h *ClientHandler) CreateClients(c fiber.Ctx) error {
 	var DTOs []dto.CreateClientDTO
 

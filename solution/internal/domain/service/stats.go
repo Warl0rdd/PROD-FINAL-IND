@@ -25,7 +25,6 @@ func NewStatsService(statsStorage StatsStorage) *StatsService {
 	}
 }
 
-// TODO статы получают цену за клик в конкретный день до/после апдейта
 // TODO проверка на параметры, которые можно/нельзя изменять после старта
 
 func (s *StatsService) GetDailyStatsByAdvertiserID(ctx context.Context, statsDTO dto.GetStatsByAdvertiserIDDTO) ([]dto.StatsDTO, error) {
