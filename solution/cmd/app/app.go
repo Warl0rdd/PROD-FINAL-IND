@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/gofiber/fiber/v3"
+	recoverer "github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
@@ -31,6 +32,14 @@ func New(config *config.Config) *App {
 		},
 	},
 	)
+
+	fiberApp.Use(recoverer.New(
+		recoverer.Config{
+			EnableStackTrace: true,
+			StackTraceHandler: func(c fiber.Ctx, e any) {
+				logger.Log.Error(e)
+			},
+		}))
 
 	return &App{
 		Fiber:     fiberApp,
