@@ -24,14 +24,15 @@ FROM campaigns с
 WHERE с.advertiser_id = $1;
 
 -- name: GetDailyStatsByCampaignID :many
-SELECT COALESCE(MAX(imps.impressions_count), 0)                                                 AS impressions_count,
-       COALESCE(MAX(clks.clicks_count), 0)                                                      AS clicks_count,
+SELECT COALESCE(MAX(imps.impressions_count), 0)                                                      AS impressions_count,
+       COALESCE(MAX(clks.clicks_count), 0)                                                           AS clicks_count,
        COALESCE((MAX(clks.clicks_count::numeric) / NULLIF(MAX(imps.impressions_count), 0)) * 100, 0) AS conversion,
-       (MAX(c.cost_per_impression) * COALESCE(MAX(imps.impressions_count), 0))                       AS spent_impressions,
+       (MAX(c.cost_per_impression) *
+        COALESCE(MAX(imps.impressions_count), 0))                                                    AS spent_impressions,
        (MAX(c.cost_per_click) * COALESCE(MAX(clks.clicks_count), 0))                                 AS spent_clicks,
        (MAX(c.cost_per_impression) * COALESCE(MAX(imps.impressions_count), 0)
            + MAX(c.cost_per_click) * COALESCE(MAX(clks.clicks_count), 0))                            AS spent_total,
-       COALESCE(imps.day, clks.day)                                                                               AS day
+       COALESCE(imps.day, clks.day)                                                                  AS day
 FROM campaigns c
          LEFT JOIN (SELECT campaign_id, COUNT(*) AS impressions_count, day
                     FROM impressions impr
@@ -53,7 +54,7 @@ SELECT COALESCE(SUM(imps.impressions_count), 0)                                 
        COALESCE(SUM(c.cost_per_click * COALESCE(clks.clicks_count, 0)), 0)                           AS spent_clicks,
        COALESCE(SUM(c.cost_per_impression * COALESCE(imps.impressions_count, 0))
                     + SUM(c.cost_per_click * COALESCE(clks.clicks_count, 0)), 0)                     AS spent_total,
-       COALESCE(imps.day, clks.day)                                                                                         AS day
+       COALESCE(imps.day, clks.day)                                                                  AS day
 FROM campaigns c
          LEFT JOIN (SELECT campaign_id, COUNT(*) AS impressions_count, day
                     FROM impressions impr
