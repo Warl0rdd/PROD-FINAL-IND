@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"solution/internal/adapters/database/postgres"
+	"solution/internal/domain/common/errorz"
 	"solution/internal/domain/dto"
 	"solution/internal/domain/entity"
 )
@@ -19,11 +20,13 @@ type campaignStorage interface {
 
 type CampaignService struct {
 	campaignStorage campaignStorage
+	dayStorage      DayStorage
 }
 
-func NewCampaignService(campaignStorage campaignStorage) *CampaignService {
+func NewCampaignService(campaignStorage campaignStorage, dayStorage DayStorage) *CampaignService {
 	return &CampaignService{
 		campaignStorage: campaignStorage,
+		dayStorage:      dayStorage,
 	}
 }
 
@@ -143,10 +146,27 @@ func (s *CampaignService) GetCampaignWithPagination(ctx context.Context, campaig
 	return result, nil
 }
 
-// TODO проверка на дату старта кампании
-
 func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.UpdateCampaignDTO) (dto.CampaignDTO, error) {
-	campaign, err := s.campaignStorage.UpdateCampaign(ctx, postgres.UpdateCampaignParams{
+	day, err := s.dayStorage.GetDay(ctx)
+
+	if err != nil {
+		return dto.CampaignDTO{}, err
+	}
+
+	campaign, err := s.campaignStorage.GetCampaignById(ctx, postgres.GetCampaignByIdParams{
+		AdvertiserID: uuid.MustParse(campaignDTO.AdvertiserID),
+		ID:           uuid.MustParse(campaignDTO.CampaignID),
+	})
+
+	if err != nil || campaign == (entity.Campaign{}) {
+		return dto.CampaignDTO{}, err
+	}
+
+	if campaign.StartDate <= int32(day) {
+		return dto.CampaignDTO{}, errorz.Forbidden
+	}
+
+	updatedCampaign, err := s.campaignStorage.UpdateCampaign(ctx, postgres.UpdateCampaignParams{
 		ID:                uuid.MustParse(campaignDTO.CampaignID),
 		AdvertiserID:      uuid.MustParse(campaignDTO.AdvertiserID),
 		CostPerImpression: campaignDTO.CostPerImpression,
@@ -171,21 +191,21 @@ func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.Up
 		return dto.CampaignDTO{}, err
 	}
 	return dto.CampaignDTO{
-		CampaignID:        campaign.ID.String(),
-		AdvertiserID:      campaign.AdvertiserID.String(),
-		ImpressionsLimit:  campaign.ImpressionLimit,
-		ClicksLimit:       campaign.ClicksLimit,
-		CostPerImpression: campaign.CostPerImpression,
-		CostPerClick:      campaign.CostPerClick,
-		AdTitle:           campaign.AdTitle,
-		AdText:            campaign.AdText,
-		StartDate:         campaign.StartDate,
-		EndDate:           campaign.EndDate,
+		CampaignID:        updatedCampaign.ID.String(),
+		AdvertiserID:      updatedCampaign.AdvertiserID.String(),
+		ImpressionsLimit:  updatedCampaign.ImpressionLimit,
+		ClicksLimit:       updatedCampaign.ClicksLimit,
+		CostPerImpression: updatedCampaign.CostPerImpression,
+		CostPerClick:      updatedCampaign.CostPerClick,
+		AdTitle:           updatedCampaign.AdTitle,
+		AdText:            updatedCampaign.AdText,
+		StartDate:         updatedCampaign.StartDate,
+		EndDate:           updatedCampaign.EndDate,
 		Targeting: dto.Target{
-			AgeFrom:  campaign.AgeFrom.Int32,
-			AgeTo:    campaign.AgeTo.Int32,
-			Location: campaign.Location.String,
-			Gender:   string(campaign.Gender),
+			AgeFrom:  updatedCampaign.AgeFrom.Int32,
+			AgeTo:    updatedCampaign.AgeTo.Int32,
+			Location: updatedCampaign.Location.String,
+			Gender:   string(updatedCampaign.Gender),
 		},
 	}, nil
 }

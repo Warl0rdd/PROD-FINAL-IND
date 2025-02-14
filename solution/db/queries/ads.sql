@@ -27,8 +27,8 @@ WHERE CASE
                     AND i.client_id = $1);
 
 -- name: AddImpression :exec
-INSERT INTO impressions (campaign_id, client_id, day)
-VALUES ($1, $2, $3)
+INSERT INTO impressions (campaign_id, client_id, day, model_score)
+VALUES ($1, $2, $3, $4)
 ON CONFLICT (campaign_id, client_id) DO NOTHING;
 
 -- name: AddClick :exec

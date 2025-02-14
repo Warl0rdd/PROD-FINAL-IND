@@ -8,6 +8,7 @@ import (
 	"solution/internal/domain/common/errorz"
 	"solution/internal/domain/dto"
 	adUtils "solution/internal/domain/utils/ads"
+	"solution/internal/domain/utils/learning"
 )
 
 type AdsStorage interface {
@@ -16,15 +17,29 @@ type AdsStorage interface {
 	AddClick(ctx context.Context, arg postgres.AddClickParams) error
 }
 
-type adsService struct {
-	adsStorage AdsStorage
-	dayStorage DayStorage
+type RedisLearningStorage interface {
+	GetR0(ctx context.Context) float64
+	SetR0(ctx context.Context, r0 float64) error
 }
 
-func NewAdsService(adsStorage AdsStorage, dayStorage DayStorage) *adsService {
+type PostgresLearningStorage interface {
+	GetImpressionsForLearning(ctx context.Context) ([]postgres.GetImpressionsForLearningRow, error)
+	UpdateLearnedImpression(ctx context.Context, id uuid.UUID) error
+}
+
+type adsService struct {
+	adsStorage              AdsStorage
+	dayStorage              DayStorage
+	redisLearningStorage    RedisLearningStorage
+	postgresLearningStorage PostgresLearningStorage
+}
+
+func NewAdsService(adsStorage AdsStorage, dayStorage DayStorage, learningStorage RedisLearningStorage, postgresLearningStorage PostgresLearningStorage) *adsService {
 	return &adsService{
-		adsStorage: adsStorage,
-		dayStorage: dayStorage,
+		adsStorage:              adsStorage,
+		dayStorage:              dayStorage,
+		redisLearningStorage:    learningStorage,
+		postgresLearningStorage: postgresLearningStorage,
 	}
 }
 
@@ -50,7 +65,7 @@ func (s *adsService) GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDT
 	scores := make(map[float64]dto.AdDTO, len(ads))
 
 	for _, ad := range ads {
-		score := adUtils.AdScore(ad.CostPerImpression, ad.CostPerClick, float64(ad.Score))
+		score := adUtils.AdScore(ad.CostPerImpression, ad.CostPerClick, float64(ad.Score), s.redisLearningStorage.GetR0(ctx))
 
 		scores[score] = dto.AdDTO{
 			AdID:         ad.ID.String(),
@@ -77,6 +92,7 @@ func (s *adsService) GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDT
 		ClientID:   uuid.MustParse(adsDTO.ClientID),
 		CampaignID: uuid.MustParse(scores[maxKey].AdID),
 		Day:        int32(day),
+		ModelScore: maxKey,
 	}); errImp != nil {
 		return dto.AdDTO{}, errImp
 	}
@@ -98,5 +114,23 @@ func (s *adsService) Click(ctx context.Context, clickDTO dto.AddClickDTO) error 
 		return errClick
 	}
 
+	go s.AdjustModel()
+
 	return nil
+}
+
+func (s *adsService) AdjustModel() {
+	ctx := context.Background()
+
+	oldR0 := s.redisLearningStorage.GetR0(ctx)
+	data, err := s.postgresLearningStorage.GetImpressionsForLearning(ctx)
+	if err != nil {
+		logger.Log.Error(err)
+	}
+
+	newR0 := learning.GenNewR0(oldR0, data)
+
+	if err := s.redisLearningStorage.SetR0(ctx, newR0); err != nil {
+		logger.Log.Error(err)
+	}
 }

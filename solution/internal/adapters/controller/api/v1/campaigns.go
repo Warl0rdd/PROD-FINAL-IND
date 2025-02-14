@@ -8,7 +8,9 @@ import (
 	"solution/cmd/app"
 	"solution/internal/adapters/controller/api/validator"
 	"solution/internal/adapters/database/postgres"
+	"solution/internal/adapters/database/redis"
 	"solution/internal/adapters/logger"
+	"solution/internal/domain/common/errorz"
 	"solution/internal/domain/dto"
 	"solution/internal/domain/service"
 )
@@ -28,9 +30,10 @@ type CampaignHandler struct {
 
 func NewCampaignHandler(app *app.App) *CampaignHandler {
 	campaignStorage := postgres.NewCampaignStorage(app.DB)
+	dayStorage := redis.NewDayStorage(app.Redis)
 
 	return &CampaignHandler{
-		campaignService: service.NewCampaignService(campaignStorage),
+		campaignService: service.NewCampaignService(campaignStorage, dayStorage),
 		validator:       app.Validator,
 	}
 }
@@ -186,6 +189,13 @@ func (h *CampaignHandler) UpdateCampaign(c fiber.Ctx) error {
 
 	updated, err := h.campaignService.UpdateCampaign(c.Context(), campaignDTO)
 	if err != nil {
+		if errors.Is(err, errorz.Forbidden) {
+			return c.Status(fiber.StatusForbidden).JSON(dto.HTTPError{
+				Code:    fiber.StatusForbidden,
+				Message: "Can't edit campaign after start date",
+			})
+		}
+
 		if updated == (dto.CampaignDTO{}) {
 			return c.Status(fiber.StatusNotFound).JSON(dto.HTTPError{
 				Code:    fiber.StatusNotFound,

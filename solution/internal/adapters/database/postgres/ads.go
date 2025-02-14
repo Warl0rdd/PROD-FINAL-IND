@@ -34,8 +34,8 @@ func (s *adsStorage) AddClick(ctx context.Context, arg AddClickParams) error {
 }
 
 const addImpression = `-- name: AddImpression :exec
-INSERT INTO impressions (campaign_id, client_id, day)
-VALUES ($1, $2, $3)
+INSERT INTO impressions (campaign_id, client_id, day, model_score)
+VALUES ($1, $2, $3, $4)
 ON CONFLICT (campaign_id, client_id) DO NOTHING
 `
 
@@ -43,10 +43,16 @@ type AddImpressionParams struct {
 	CampaignID uuid.UUID
 	ClientID   uuid.UUID
 	Day        int32
+	ModelScore float64
 }
 
 func (s *adsStorage) AddImpression(ctx context.Context, arg AddImpressionParams) error {
-	_, err := s.db.Exec(ctx, addImpression, arg.CampaignID, arg.ClientID, arg.Day)
+	_, err := s.db.Exec(ctx, addImpression,
+		arg.CampaignID,
+		arg.ClientID,
+		arg.Day,
+		arg.ModelScore,
+	)
 	return err
 }
 

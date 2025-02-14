@@ -13,16 +13,13 @@ rel - Релевантность (ml_score)
 Итого оценка складывается из 2/3 кф-нта прибыли и 1/3 релевантности
 */
 
-func AdScore(cpi, cpc, rel float64) float64 {
-	return logistic(rel)*(cpc+cpi) + (1.0-logistic(rel))*cpi
+func AdScore(cpi, cpc, rel, r0 float64) float64 {
+	return logistic(rel, r0)*(cpc+cpi) + (1.0-logistic(rel, r0))*cpi
 }
 
-// TODO динамический r0
-func logistic(x float64) float64 {
+func logistic(x, r0 float64) float64 {
 	// Кф-нт кривизны - чем меньше, тем плавнее будет переход между влиянием цены за показ и цены за клик
 	k := 0.15
-	// Значение релевантности, в котором функция будет равна 1
-	r0 := 50.0
 
 	return 1 / (1 + math.Exp(-k*(x-r0)))
 }

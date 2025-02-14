@@ -25,8 +25,11 @@ func NewAdsHandler(app *app.App) *AdsHandler {
 	adsStorage := postgres.NewAdsStorage(app.DB)
 	dayStorage := redis.NewDayStorage(app.Redis)
 
+	redisLearningStorage := redis.NewLearningStorage(app.Redis)
+	postgresLearningStorage := postgres.NewLearningStorage(app.DB)
+
 	return &AdsHandler{
-		adsService: service.NewAdsService(adsStorage, dayStorage),
+		adsService: service.NewAdsService(adsStorage, dayStorage, redisLearningStorage, postgresLearningStorage),
 		validator:  app.Validator,
 	}
 }
