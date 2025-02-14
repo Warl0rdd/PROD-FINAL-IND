@@ -4,81 +4,80 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"solution/internal/adapters/database/postgres"
+	"solution/internal/domain/common/errorz"
 	"solution/internal/domain/dto"
 )
 
 type StatsStorage interface {
-	GetDailyStatsByAdvertiserID(ctx context.Context, arg postgres.GetDailyStatsByAdvertiserIDParams) (postgres.GetDailyStatsByAdvertiserIDRow, error)
-	GetDailyStatsByCampaignID(ctx context.Context, arg postgres.GetDailyStatsByCampaignIDParams) (postgres.GetDailyStatsByCampaignIDRow, error)
+	GetDailyStatsByAdvertiserID(ctx context.Context, advertiserID uuid.UUID) ([]postgres.GetDailyStatsByAdvertiserIDRow, error)
+	GetDailyStatsByCampaignID(ctx context.Context, id uuid.UUID) ([]postgres.GetDailyStatsByCampaignIDRow, error)
 	GetStatsByAdvertiserID(ctx context.Context, advertiserID uuid.UUID) (postgres.GetStatsByAdvertiserIDRow, error)
 	GetStatsByCampaignID(ctx context.Context, id uuid.UUID) (postgres.GetStatsByCampaignIDRow, error)
 }
 
 type StatsService struct {
 	statsStorage StatsStorage
-	dayStorage   DayStorage
 }
 
-func NewStatsService(statsStorage StatsStorage, dayStorage DayStorage) *StatsService {
+func NewStatsService(statsStorage StatsStorage) *StatsService {
 	return &StatsService{
 		statsStorage: statsStorage,
-		dayStorage:   dayStorage,
 	}
 }
 
 // GetDailyStatsByAdvertiserID TODO стата не за конкретный день, а по всем дням
-func (s *StatsService) GetDailyStatsByAdvertiserID(ctx context.Context, statsDTO dto.GetStatsByAdvertiserIDDTO) (dto.StatsDTO, error) {
-	day, err := s.dayStorage.GetDay(ctx)
-	if err != nil {
-		return dto.StatsDTO{}, err
-	}
-
-	arg := postgres.GetDailyStatsByAdvertiserIDParams{
-		AdvertiserID: uuid.MustParse(statsDTO.AdvertiserID),
-		Day:          int32(day),
-	}
-
-	stats, err := s.statsStorage.GetDailyStatsByAdvertiserID(ctx, arg)
+func (s *StatsService) GetDailyStatsByAdvertiserID(ctx context.Context, statsDTO dto.GetStatsByAdvertiserIDDTO) ([]dto.StatsDTO, error) {
+	stats, err := s.statsStorage.GetDailyStatsByAdvertiserID(ctx, uuid.MustParse(statsDTO.AdvertiserID))
 
 	if err != nil {
-		return dto.StatsDTO{}, err
+		return []dto.StatsDTO{}, err
 	}
 
-	return dto.StatsDTO{
-		ImpressionsCount: int(stats.ImpressionsCount),
-		ClicksCount:      int(stats.ClicksCount),
-		Conversion:       stats.Conversion,
-		SpentImpressions: stats.SpentImpressions,
-		SpentClicks:      stats.SpentClicks,
-		SpentTotal:       stats.SpentTotal,
-	}, nil
+	if len(stats) == 0 {
+		return []dto.StatsDTO{}, errorz.NotFound
+	}
+
+	var statsDTOs []dto.StatsDTO
+	for _, stat := range stats {
+		statsDTOs = append(statsDTOs, dto.StatsDTO{
+			ImpressionsCount: int(stat.ImpressionsCount),
+			ClicksCount:      int(stat.ClicksCount),
+			Conversion:       stat.Conversion,
+			SpentImpressions: stat.SpentImpressions,
+			SpentClicks:      stat.SpentClicks,
+			SpentTotal:       stat.SpentTotal,
+			Day:              int(stat.Day),
+		})
+	}
+
+	return statsDTOs, nil
 }
 
-func (s *StatsService) GetDailyStatsByCampaignID(ctx context.Context, statsDTO dto.GetStatsByCampaignIDDTO) (dto.StatsDTO, error) {
-	day, err := s.dayStorage.GetDay(ctx)
-	if err != nil {
-		return dto.StatsDTO{}, err
-	}
-
-	arg := postgres.GetDailyStatsByCampaignIDParams{
-		ID:  uuid.MustParse(statsDTO.CampaignID),
-		Day: int32(day),
-	}
-
-	stats, err := s.statsStorage.GetDailyStatsByCampaignID(ctx, arg)
+func (s *StatsService) GetDailyStatsByCampaignID(ctx context.Context, statsDTO dto.GetStatsByCampaignIDDTO) ([]dto.StatsDTO, error) {
+	stats, err := s.statsStorage.GetDailyStatsByCampaignID(ctx, uuid.MustParse(statsDTO.CampaignID))
 
 	if err != nil {
-		return dto.StatsDTO{}, err
+		return []dto.StatsDTO{}, err
 	}
 
-	return dto.StatsDTO{
-		ImpressionsCount: int(stats.ImpressionsCount),
-		ClicksCount:      int(stats.ClicksCount),
-		Conversion:       stats.Conversion,
-		SpentImpressions: stats.SpentImpressions,
-		SpentClicks:      stats.SpentClicks,
-		SpentTotal:       stats.SpentTotal,
-	}, nil
+	if len(stats) == 0 {
+		return []dto.StatsDTO{}, errorz.NotFound
+	}
+
+	var statsDTOs []dto.StatsDTO
+	for _, stat := range stats {
+		statsDTOs = append(statsDTOs, dto.StatsDTO{
+			ImpressionsCount: int(stat.ImpressionsCount),
+			ClicksCount:      int(stat.ClicksCount),
+			Conversion:       stat.Conversion,
+			SpentImpressions: stat.SpentImpressions,
+			SpentClicks:      stat.SpentClicks,
+			SpentTotal:       stat.SpentTotal,
+			Day:              int(stat.Day),
+		})
+	}
+
+	return statsDTOs, nil
 }
 
 func (s *StatsService) GetStatsByAdvertiserID(ctx context.Context, statsDTO dto.GetStatsByAdvertiserIDDTO) (dto.StatsDTO, error) {

@@ -16,24 +16,26 @@ func NewStatsStorage(db *pgxpool.Pool) *statsStorage {
 	}
 }
 
-const getDailyStatsByAdvertiserID = `-- name: GetDailyStatsByAdvertiserID :one
-SELECT COALESCE(SUM(imps.impressions_count), 0)                                            AS impressions_count,
-       COALESCE(SUM(clks.clicks_count), 0)                                                 AS clicks_count,
+const getDailyStatsByAdvertiserID = `-- name: GetDailyStatsByAdvertiserID :many
+SELECT COALESCE(SUM(imps.impressions_count), 0)                                                      AS impressions_count,
+       COALESCE(SUM(clks.clicks_count), 0)                                                           AS clicks_count,
        COALESCE((SUM(clks.clicks_count)::numeric / NULLIF(SUM(imps.impressions_count), 0)) * 100, 0) AS conversion,
-       COALESCE(SUM(c.cost_per_impression * COALESCE(imps.impressions_count, 0)), 0)       AS spent_impressions,
-       COALESCE(SUM(c.cost_per_click * COALESCE(clks.clicks_count, 0)), 0)                 AS spent_clicks,
+       COALESCE(SUM(c.cost_per_impression * COALESCE(imps.impressions_count, 0)),
+                0)                                                                                   AS spent_impressions,
+       COALESCE(SUM(c.cost_per_click * COALESCE(clks.clicks_count, 0)), 0)                           AS spent_clicks,
        COALESCE(SUM(c.cost_per_impression * COALESCE(imps.impressions_count, 0))
-                    + SUM(c.cost_per_click * COALESCE(clks.clicks_count, 0)), 0)           AS spent_total
+                    + SUM(c.cost_per_click * COALESCE(clks.clicks_count, 0)), 0)                     AS spent_total,
+       COALESCE(imps.day, clks.day)                                                                                         AS day
 FROM campaigns c
-         LEFT JOIN (SELECT campaign_id, COUNT(*) AS impressions_count
+         LEFT JOIN (SELECT campaign_id, COUNT(*) AS impressions_count, day
                     FROM impressions impr
-                    WHERE impr.day = $2
-                    GROUP BY campaign_id) imps ON c.id = imps.campaign_id
-         LEFT JOIN (SELECT campaign_id, COUNT(*) AS clicks_count
+                    GROUP BY campaign_id, day) imps ON c.id = imps.campaign_id
+         LEFT JOIN (SELECT campaign_id, COUNT(*) AS clicks_count, day
                     FROM clicks cl
-                    WHERE cl.day = $2
-                    GROUP BY campaign_id) clks ON c.id = clks.campaign_id
-WHERE c.advertiser_id = $1;
+                    GROUP BY campaign_id, day) clks ON c.id = clks.campaign_id
+WHERE c.advertiser_id = $1
+  AND COALESCE(imps.day, clks.day) IS NOT NULL
+GROUP BY COALESCE(imps.day, clks.day)
 `
 
 type GetDailyStatsByAdvertiserIDParams struct {
@@ -48,40 +50,56 @@ type GetDailyStatsByAdvertiserIDRow struct {
 	SpentImpressions float64
 	SpentClicks      float64
 	SpentTotal       float64
+	Day              int32
 }
 
-func (s *statsStorage) GetDailyStatsByAdvertiserID(ctx context.Context, arg GetDailyStatsByAdvertiserIDParams) (GetDailyStatsByAdvertiserIDRow, error) {
-	row := s.db.QueryRow(ctx, getDailyStatsByAdvertiserID, arg.AdvertiserID, arg.Day)
-	var i GetDailyStatsByAdvertiserIDRow
-	err := row.Scan(
-		&i.ImpressionsCount,
-		&i.ClicksCount,
-		&i.Conversion,
-		&i.SpentImpressions,
-		&i.SpentClicks,
-		&i.SpentTotal,
-	)
-	return i, err
+func (s *statsStorage) GetDailyStatsByAdvertiserID(ctx context.Context, advertiserID uuid.UUID) ([]GetDailyStatsByAdvertiserIDRow, error) {
+	rows, err := s.db.Query(ctx, getDailyStatsByAdvertiserID, advertiserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetDailyStatsByAdvertiserIDRow
+	for rows.Next() {
+		var i GetDailyStatsByAdvertiserIDRow
+		if err := rows.Scan(
+			&i.ImpressionsCount,
+			&i.ClicksCount,
+			&i.Conversion,
+			&i.SpentImpressions,
+			&i.SpentClicks,
+			&i.SpentTotal,
+			&i.Day,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
-const getDailyStatsByCampaignID = `-- name: GetDailyStatsByCampaignID :one
-SELECT COALESCE(imps.impressions_count, 0)                                                 AS impressions_count,
-       COALESCE(clks.clicks_count, 0)                                                      AS clicks_count,
-       COALESCE((clks.clicks_count::numeric / NULLIF(imps.impressions_count, 0)) * 100, 0) AS conversion,
-       (c.cost_per_impression * COALESCE(imps.impressions_count, 0))                       AS spent_impressions,
-       (c.cost_per_click * COALESCE(clks.clicks_count, 0))                                 AS spent_clicks,
-       (c.cost_per_impression * COALESCE(imps.impressions_count, 0)
-           + c.cost_per_click * COALESCE(clks.clicks_count, 0))                            AS spent_total
+const getDailyStatsByCampaignID = `-- name: GetDailyStatsByCampaignID :many
+SELECT COALESCE(MAX(imps.impressions_count), 0)                                                 AS impressions_count,
+       COALESCE(MAX(clks.clicks_count), 0)                                                      AS clicks_count,
+       COALESCE((MAX(clks.clicks_count::numeric) / NULLIF(MAX(imps.impressions_count), 0)) * 100, 0) AS conversion,
+       (MAX(c.cost_per_impression) * COALESCE(MAX(imps.impressions_count), 0))                       AS spent_impressions,
+       (MAX(c.cost_per_click) * COALESCE(MAX(clks.clicks_count), 0))                                 AS spent_clicks,
+       (MAX(c.cost_per_impression) * COALESCE(MAX(imps.impressions_count), 0)
+           + MAX(c.cost_per_click) * COALESCE(MAX(clks.clicks_count), 0))                            AS spent_total,
+       COALESCE(imps.day, clks.day)                                                                               AS day
 FROM campaigns c
-         LEFT JOIN (SELECT campaign_id, COUNT(*) AS impressions_count
+         LEFT JOIN (SELECT campaign_id, COUNT(*) AS impressions_count, day
                     FROM impressions impr
-                    WHERE impr.day = $2
-                    GROUP BY campaign_id) imps ON c.id = imps.campaign_id
-         LEFT JOIN (SELECT campaign_id, COUNT(*) AS clicks_count
+                    GROUP BY campaign_id, day) imps ON c.id = imps.campaign_id
+         LEFT JOIN (SELECT campaign_id, COUNT(*) AS clicks_count, day
                     FROM clicks cl
-                    WHERE cl.day = $2
-                    GROUP BY campaign_id) clks ON c.id = clks.campaign_id
-WHERE c.id = $1;
+                    GROUP BY campaign_id, day) clks ON c.id = clks.campaign_id
+WHERE c.id = $1
+  AND COALESCE(imps.day, clks.day) IS NOT NULL
+GROUP BY COALESCE(imps.day, clks.day)
 `
 
 type GetDailyStatsByCampaignIDParams struct {
@@ -96,20 +114,35 @@ type GetDailyStatsByCampaignIDRow struct {
 	SpentImpressions float64
 	SpentClicks      float64
 	SpentTotal       float64
+	Day              int32
 }
 
-func (s *statsStorage) GetDailyStatsByCampaignID(ctx context.Context, arg GetDailyStatsByCampaignIDParams) (GetDailyStatsByCampaignIDRow, error) {
-	row := s.db.QueryRow(ctx, getDailyStatsByCampaignID, arg.ID, arg.Day)
-	var i GetDailyStatsByCampaignIDRow
-	err := row.Scan(
-		&i.ImpressionsCount,
-		&i.ClicksCount,
-		&i.Conversion,
-		&i.SpentImpressions,
-		&i.SpentClicks,
-		&i.SpentTotal,
-	)
-	return i, err
+func (s *statsStorage) GetDailyStatsByCampaignID(ctx context.Context, id uuid.UUID) ([]GetDailyStatsByCampaignIDRow, error) {
+	rows, err := s.db.Query(ctx, getDailyStatsByCampaignID, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetDailyStatsByCampaignIDRow
+	for rows.Next() {
+		var i GetDailyStatsByCampaignIDRow
+		if err := rows.Scan(
+			&i.ImpressionsCount,
+			&i.ClicksCount,
+			&i.Conversion,
+			&i.SpentImpressions,
+			&i.SpentClicks,
+			&i.SpentTotal,
+			&i.Day,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getStatsByAdvertiserID = `-- name: GetStatsByAdvertiserID :one
