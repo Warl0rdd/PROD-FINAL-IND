@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"github.com/redis/go-redis/v9"
+	"math"
 )
 
 type learningStorage struct {
@@ -21,7 +22,7 @@ func (s *learningStorage) SetR0(ctx context.Context, r0 float64) error {
 
 func (s *learningStorage) GetR0(ctx context.Context) float64 {
 	r0, err := s.db.Get(ctx, "r0").Float64()
-	if err != nil {
+	if err != nil || math.IsNaN(r0) {
 		_ = s.SetR0(ctx, 0.5)
 		return 0.5
 	}
