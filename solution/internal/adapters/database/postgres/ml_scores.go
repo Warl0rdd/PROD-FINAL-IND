@@ -26,7 +26,7 @@ RETURNING id
 type InsertOrUpdateMlScoreParams struct {
 	ClientID     uuid.UUID
 	AdvertiserID uuid.UUID
-	Score        int32
+	Score        float64
 }
 
 func (s *mlScoreStorage) InsertOrUpdateMlScore(ctx context.Context, arg InsertOrUpdateMlScoreParams) (uuid.UUID, error) {

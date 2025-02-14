@@ -26,6 +26,7 @@ func NewStatsService(statsStorage StatsStorage, dayStorage DayStorage) *StatsSer
 	}
 }
 
+// GetDailyStatsByAdvertiserID TODO стата не за конкретный день, а по всем дням
 func (s *StatsService) GetDailyStatsByAdvertiserID(ctx context.Context, statsDTO dto.GetStatsByAdvertiserIDDTO) (dto.StatsDTO, error) {
 	day, err := s.dayStorage.GetDay(ctx)
 	if err != nil {

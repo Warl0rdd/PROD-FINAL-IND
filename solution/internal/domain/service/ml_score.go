@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"solution/internal/adapters/database/postgres"
 	"solution/internal/domain/dto"
+	"solution/internal/domain/utils/ads"
 )
 
 type mlScoreStorage interface {
@@ -25,6 +26,6 @@ func (s *mlScoreService) InsertOrUpdateMlScore(ctx context.Context, dto dto.Crea
 	return s.mlScoreStorage.InsertOrUpdateMlScore(ctx, postgres.InsertOrUpdateMlScoreParams{
 		ClientID:     uuid.MustParse(dto.ClientID),
 		AdvertiserID: uuid.MustParse(dto.AdvertiserID),
-		Score:        int32(dto.Score),
+		Score:        ads.Normalization(float64(dto.Score)),
 	})
 }

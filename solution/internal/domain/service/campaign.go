@@ -27,8 +27,7 @@ func NewCampaignService(campaignStorage campaignStorage) *CampaignService {
 	}
 }
 
-// TODO fix gender
-
+// CreateCampaign TODO fix gender
 func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.CreateCampaignDTO) (dto.CampaignDTO, error) {
 	// Если нам не передали нижнюю границу возраста и нам подставилось нулевое значение - нас это устраивает
 	// А если не передали верхнюю границу возраста - ставим максимальное, что бы сортировка таргетинга по верхней границе возраста не применялась
@@ -144,7 +143,7 @@ func (s *CampaignService) GetCampaignWithPagination(ctx context.Context, campaig
 	return result, nil
 }
 
-// TODO проверка на дату старта компании
+// TODO проверка на дату старта кампании
 
 func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.UpdateCampaignDTO) (dto.CampaignDTO, error) {
 	campaign, err := s.campaignStorage.UpdateCampaign(ctx, postgres.UpdateCampaignParams{

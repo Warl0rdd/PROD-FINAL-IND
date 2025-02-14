@@ -17,6 +17,7 @@ func AdScore(cpi, cpc, rel float64) float64 {
 	return logistic(rel)*(cpc+cpi) + (1.0-logistic(rel))*cpi
 }
 
+// TODO динамический r0
 func logistic(x float64) float64 {
 	// Кф-нт кривизны - чем меньше, тем плавнее будет переход между влиянием цены за показ и цены за клик
 	k := 0.15
@@ -24,4 +25,10 @@ func logistic(x float64) float64 {
 	r0 := 50.0
 
 	return 1 / (1 + math.Exp(-k*(x-r0)))
+}
+
+// Нормализация ml_score из абсолютных значений в пределы от 0 до 1
+
+func Normalization(rel float64) float64 {
+	return rel / 2147483647.0
 }
