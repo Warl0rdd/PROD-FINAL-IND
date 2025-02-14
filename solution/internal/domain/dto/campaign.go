@@ -49,6 +49,8 @@ type GetCampaignsWithPaginationDTO struct {
 type UpdateCampaignDTO struct {
 	CampaignID        string  `params:"campaignId"`
 	AdvertiserID      string  `params:"advertiserId"`
+	ImpressionsLimit  int32   `json:"impressions_limit"`
+	ClicksLimit       int32   `json:"clicks_limit"`
 	CostPerImpression float64 `json:"cost_per_impression"`
 	CostPerClick      float64 `json:"cost_per_click"`
 	AdTitle           string  `json:"ad_title"`

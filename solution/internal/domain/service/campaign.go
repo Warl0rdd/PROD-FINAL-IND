@@ -30,7 +30,6 @@ func NewCampaignService(campaignStorage campaignStorage, dayStorage DayStorage) 
 	}
 }
 
-// CreateCampaign TODO fix gender
 func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.CreateCampaignDTO) (dto.CampaignDTO, error) {
 	// Если нам не передали нижнюю границу возраста и нам подставилось нулевое значение - нас это устраивает
 	// А если не передали верхнюю границу возраста - ставим максимальное, что бы сортировка таргетинга по верхней границе возраста не применялась
@@ -173,6 +172,8 @@ func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.Up
 		CostPerClick:      campaignDTO.CostPerClick,
 		AdTitle:           campaignDTO.AdTitle,
 		AdText:            campaignDTO.AdText,
+		ImpressionLimit:   campaignDTO.ImpressionsLimit,
+		ClicksLimit:       campaignDTO.ClicksLimit,
 		AgeFrom: pgtype.Int4{
 			Int32: campaignDTO.Targeting.AgeFrom,
 			Valid: true,

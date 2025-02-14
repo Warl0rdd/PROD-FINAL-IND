@@ -133,4 +133,10 @@ func (s *adsService) AdjustModel() {
 	if err := s.redisLearningStorage.SetR0(ctx, newR0); err != nil {
 		logger.Log.Error(err)
 	}
+
+	for _, v := range data {
+		if err := s.postgresLearningStorage.UpdateLearnedImpression(ctx, v.ID); err != nil {
+			logger.Log.Error(err)
+		}
+	}
 }

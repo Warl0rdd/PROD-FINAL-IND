@@ -2,7 +2,9 @@ package v1
 
 import (
 	"context"
+	"errors"
 	"github.com/gofiber/fiber/v3"
+	"github.com/jackc/pgx/v5"
 	"solution/cmd/app"
 	"solution/internal/adapters/controller/api/validator"
 	"solution/internal/adapters/database/postgres"
@@ -53,6 +55,13 @@ func (h *AdsHandler) GetAds(c fiber.Ctx) error {
 
 	ads, err := h.adsService.GetAds(c.Context(), adsDTO)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return c.Status(fiber.StatusNotFound).JSON(dto.HTTPError{
+				Code:    fiber.StatusNotFound,
+				Message: "Ads not found",
+			})
+		}
+
 		return c.Status(fiber.StatusInternalServerError).JSON(dto.HTTPError{
 			Code:    fiber.StatusInternalServerError,
 			Message: err.Error(),

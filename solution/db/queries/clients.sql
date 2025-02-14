@@ -1,6 +1,6 @@
 -- name: CreateClient :one
 INSERT INTO clients (id, login, age, location, gender)
-VALUES ($1, $2, $3, $4, $5)
+VALUES ($1, $2, $3, $4, $5::gender)
 ON CONFLICT (id)
     DO UPDATE SET login    = $2,
                   age      = $3,

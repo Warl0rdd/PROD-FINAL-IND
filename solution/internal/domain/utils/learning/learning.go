@@ -5,7 +5,7 @@ import "solution/internal/adapters/database/postgres"
 // Подробнее в algorithm.md
 
 func GenNewR0(oldR0 float64, data []postgres.GetImpressionsForLearningRow) float64 {
-	n := 0.1
+	n := 0.05
 
 	var sum float64
 	for _, item := range data {
@@ -19,7 +19,11 @@ func GenNewR0(oldR0 float64, data []postgres.GetImpressionsForLearningRow) float
 		sum += item.ModelScore - trueClick
 	}
 
-	sum *= 0.15 / float64(len(data))
+	if len(data) == 0 {
+		return oldR0
+	} else {
+		sum *= 0.15 / float64(len(data))
+	}
 
 	return oldR0 - n*sum
 }
