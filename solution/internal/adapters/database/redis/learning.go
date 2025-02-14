@@ -22,6 +22,7 @@ func (s *learningStorage) SetR0(ctx context.Context, r0 float64) error {
 func (s *learningStorage) GetR0(ctx context.Context) float64 {
 	r0, err := s.db.Get(ctx, "r0").Float64()
 	if err != nil {
+		_ = s.SetR0(ctx, 0.5)
 		return 0.5
 	}
 
