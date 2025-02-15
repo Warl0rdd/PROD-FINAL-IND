@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"solution/internal/adapters/database/postgres"
 	"solution/internal/domain/common/errorz"
 	"solution/internal/domain/dto"
@@ -33,6 +35,10 @@ func NewCampaignService(campaignStorage campaignStorage, dayStorage DayStorage) 
 func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.CreateCampaignDTO) (dto.CampaignDTO, error) {
 	// Если нам не передали нижнюю границу возраста и нам подставилось нулевое значение - нас это устраивает
 	// А если не передали верхнюю границу возраста - ставим максимальное, что бы сортировка таргетинга по верхней границе возраста не применялась
+
+	tracer := otel.Tracer("campaign-service")
+	ctx, span := tracer.Start(ctx, "CreateCampaign")
+	defer span.End()
 
 	var ageTo int32
 	if campaignDTO.Targeting.AgeTo != 0 {
@@ -85,6 +91,10 @@ func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.Cr
 }
 
 func (s *CampaignService) GetCampaignById(ctx context.Context, campaignDTO dto.GetCampaignByIDDTO) (dto.CampaignDTO, error) {
+	tracer := otel.Tracer("campaign-service")
+	ctx, span := tracer.Start(ctx, "GetCampaignById")
+	defer span.End()
+
 	campaign, err := s.campaignStorage.GetCampaignById(ctx, postgres.GetCampaignByIdParams{
 		AdvertiserID: uuid.MustParse(campaignDTO.AdvertiserID),
 		ID:           uuid.MustParse(campaignDTO.CampaignID),
@@ -113,6 +123,10 @@ func (s *CampaignService) GetCampaignById(ctx context.Context, campaignDTO dto.G
 }
 
 func (s *CampaignService) GetCampaignWithPagination(ctx context.Context, campaignDTO dto.GetCampaignsWithPaginationDTO) ([]dto.CampaignDTO, error) {
+	tracer := otel.Tracer("campaign-service")
+	ctx, span := tracer.Start(ctx, "GetCampaignWithPagination")
+	defer span.End()
+
 	campaigns, err := s.campaignStorage.GetCampaignWithPagination(ctx, postgres.GetCampaignWithPaginationParams{
 		AdvertiserID: uuid.MustParse(campaignDTO.AdvertiserID),
 		Limit:        campaignDTO.Limit,
@@ -146,11 +160,17 @@ func (s *CampaignService) GetCampaignWithPagination(ctx context.Context, campaig
 }
 
 func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.UpdateCampaignDTO) (dto.CampaignDTO, error) {
+	tracer := otel.Tracer("campaign-service")
+	ctx, span := tracer.Start(ctx, "UpdateCampaign")
+	defer span.End()
+
 	day, err := s.dayStorage.GetDay(ctx)
 
 	if err != nil {
 		return dto.CampaignDTO{}, err
 	}
+
+	span.SetAttributes(attribute.Int("day", day))
 
 	campaign, err := s.campaignStorage.GetCampaignById(ctx, postgres.GetCampaignByIdParams{
 		AdvertiserID: uuid.MustParse(campaignDTO.AdvertiserID),
@@ -214,6 +234,10 @@ func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.Up
 }
 
 func (s *CampaignService) DeleteCampaign(ctx context.Context, campaignDTO dto.DeleteCampaignDTO) error {
+	tracer := otel.Tracer("campaign-service")
+	ctx, span := tracer.Start(ctx, "DeleteCampaign")
+	defer span.End()
+
 	return s.campaignStorage.DeleteCampaign(ctx, postgres.DeleteCampaignParams{
 		ID:           uuid.MustParse(campaignDTO.CampaignID),
 		AdvertiserID: uuid.MustParse(campaignDTO.AdvertiserID),

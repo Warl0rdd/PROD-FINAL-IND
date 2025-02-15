@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.opentelemetry.io/otel"
 )
 
 type statsStorage struct {
@@ -62,6 +63,10 @@ type GetDailyStatsByAdvertiserIDRow struct {
 }
 
 func (s *statsStorage) GetDailyStatsByAdvertiserID(ctx context.Context, advertiserID uuid.UUID) ([]GetDailyStatsByAdvertiserIDRow, error) {
+	tracer := otel.Tracer("stats-storage")
+	ctx, span := tracer.Start(ctx, "GetDailyStatsByAdvertiserID")
+	defer span.End()
+
 	rows, err := s.db.Query(ctx, getDailyStatsByAdvertiserID, advertiserID)
 	if err != nil {
 		return nil, err
@@ -136,6 +141,10 @@ type GetDailyStatsByCampaignIDRow struct {
 }
 
 func (s *statsStorage) GetDailyStatsByCampaignID(ctx context.Context, id uuid.UUID) ([]GetDailyStatsByCampaignIDRow, error) {
+	tracer := otel.Tracer("stats-storage")
+	ctx, span := tracer.Start(ctx, "GetDailyStatsByCampaignID")
+	defer span.End()
+
 	rows, err := s.db.Query(ctx, getDailyStatsByCampaignID, id)
 	if err != nil {
 		return nil, err
@@ -201,6 +210,10 @@ type GetStatsByAdvertiserIDRow struct {
 }
 
 func (s *statsStorage) GetStatsByAdvertiserID(ctx context.Context, advertiserID uuid.UUID) (GetStatsByAdvertiserIDRow, error) {
+	tracer := otel.Tracer("stats-storage")
+	ctx, span := tracer.Start(ctx, "GetStatsByAdvertiserID")
+	defer span.End()
+
 	row := s.db.QueryRow(ctx, getStatsByAdvertiserID, advertiserID)
 	var i GetStatsByAdvertiserIDRow
 	err := row.Scan(
@@ -248,6 +261,10 @@ type GetStatsByCampaignIDRow struct {
 }
 
 func (s *statsStorage) GetStatsByCampaignID(ctx context.Context, id uuid.UUID) (GetStatsByCampaignIDRow, error) {
+	tracer := otel.Tracer("stats-storage")
+	ctx, span := tracer.Start(ctx, "GetStatsByCampaignID")
+	defer span.End()
+
 	row := s.db.QueryRow(ctx, getStatsByCampaignID, id)
 	var i GetStatsByCampaignIDRow
 	err := row.Scan(

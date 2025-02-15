@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.opentelemetry.io/otel"
 )
 
 type mlScoreStorage struct {
@@ -30,6 +31,10 @@ type InsertOrUpdateMlScoreParams struct {
 }
 
 func (s *mlScoreStorage) InsertOrUpdateMlScore(ctx context.Context, arg InsertOrUpdateMlScoreParams) (uuid.UUID, error) {
+	tracer := otel.Tracer("ml-score-storage")
+	ctx, span := tracer.Start(ctx, "InsertOrUpdateMlScore")
+	defer span.End()
+
 	row := s.db.QueryRow(ctx, insertOrUpdateMlScore, arg.ClientID, arg.AdvertiserID, arg.Score)
 	var id uuid.UUID
 	err := row.Scan(&id)

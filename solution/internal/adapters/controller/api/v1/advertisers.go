@@ -3,6 +3,8 @@ package v1
 import (
 	"context"
 	"github.com/gofiber/fiber/v3"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"solution/cmd/app"
 	"solution/internal/adapters/controller/api/validator"
 	"solution/internal/adapters/database/postgres"
@@ -32,9 +34,14 @@ func NewAdvertiserHandler(app *app.App) *AdvertiserHandler {
 }
 
 func (h *AdvertiserHandler) CreateAdvertiser(c fiber.Ctx) error {
+	tracer := otel.Tracer("advertiser-handler")
+	ctx, span := tracer.Start(c.Context(), "CreateAdvertiser")
+	defer span.End()
+
 	var DTOs []dto.CreateAdvertiserDTO
 
 	if err := c.Bind().Body(&DTOs); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
@@ -45,6 +52,7 @@ func (h *AdvertiserHandler) CreateAdvertiser(c fiber.Ctx) error {
 
 	for _, v := range DTOs {
 		if err := h.validator.ValidateData(v); err != nil {
+			span.RecordError(err)
 			return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 				Code:    fiber.StatusBadRequest,
 				Message: err.Error(),
@@ -52,8 +60,14 @@ func (h *AdvertiserHandler) CreateAdvertiser(c fiber.Ctx) error {
 		}
 	}
 
-	_, err := h.advertiserService.CreateAdvertiser(c.Context(), DTOs[0])
+	span.SetAttributes(
+		attribute.Int("advertisers.count", len(DTOs)),
+		attribute.String("endpoint", "/advertisers/bulk"),
+	)
+
+	_, err := h.advertiserService.CreateAdvertiser(ctx, DTOs[0])
 	if err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(dto.HTTPError{
 			Code:    fiber.StatusInternalServerError,
 			Message: err.Error(),
@@ -64,9 +78,14 @@ func (h *AdvertiserHandler) CreateAdvertiser(c fiber.Ctx) error {
 }
 
 func (h *AdvertiserHandler) GetAdvertiserById(c fiber.Ctx) error {
+	tracer := otel.Tracer("advertiser-handler")
+	ctx, span := tracer.Start(c.Context(), "GetAdvertiserById")
+	defer span.End()
+
 	var getAdvertiserDTO dto.GetAdvertiserByIdDTO
 
 	if err := c.Bind().URI(&getAdvertiserDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
@@ -74,14 +93,21 @@ func (h *AdvertiserHandler) GetAdvertiserById(c fiber.Ctx) error {
 	}
 
 	if err := h.validator.ValidateData(getAdvertiserDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
 		})
 	}
 
-	advertiser, err := h.advertiserService.GetAdvertiserById(c.Context(), getAdvertiserDTO)
+	span.SetAttributes(
+		attribute.String("advertiserId", getAdvertiserDTO.AdvertiserID),
+		attribute.String("endpoint", "/advertisers/{advertiserId}"),
+	)
+
+	advertiser, err := h.advertiserService.GetAdvertiserById(ctx, getAdvertiserDTO)
 	if err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(dto.HTTPError{
 			Code:    fiber.StatusInternalServerError,
 			Message: err.Error(),

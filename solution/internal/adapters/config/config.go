@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"fmt"
+	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
@@ -57,9 +58,7 @@ func Configure() *Config {
 		os.Exit(1)
 	}
 
-	if viper.GetBool("settings.debug") {
-		pgxConfig.ConnConfig.Tracer = &logger.ZapQueryTracer{Log: logger.Log.SugaredLogger}
-	}
+	pgxConfig.ConnConfig.Tracer = otelpgx.NewTracer()
 
 	logger.Log.Debugf("dsn: %s", dsn)
 	logger.Log.Debug("Connecting to postgres...")
@@ -69,6 +68,10 @@ func Configure() *Config {
 		os.Exit(1)
 	} else {
 		logger.Log.Info("Connected to postgres")
+	}
+
+	if err := otelpgx.RecordStats(database); err != nil {
+		logger.Log.Panicf("Unable to record database stats: %v", err)
 	}
 
 	logger.Log.Info("Database initialized")

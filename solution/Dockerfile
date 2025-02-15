@@ -21,7 +21,7 @@ RUN go build -o bin/application ./cmd
 # Prepare executor image.
 FROM alpine:3.21 AS runner
 
-RUN apk update && apk add ca-certificates libc6-compat openssh bash && rm -rf /var/cache/apk/*
+RUN apk update && apk add ca-certificates libc6-compat openssh bash make && rm -rf /var/cache/apk/*
 
 WORKDIR /opt
 
@@ -32,6 +32,8 @@ EXPOSE 3000
 
 # Add required static files.
 #COPY assets assets
+
+# TODO add goose
 
 # Run the application.
 CMD ["./application"]

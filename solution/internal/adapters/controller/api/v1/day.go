@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"github.com/gofiber/fiber/v3"
+	"go.opentelemetry.io/otel"
 	"solution/cmd/app"
 	"solution/internal/adapters/controller/api/validator"
 	"solution/internal/adapters/database/redis"
@@ -30,9 +31,14 @@ func NewDayHandler(app *app.App) *DayHandler {
 }
 
 func (h *DayHandler) SetDay(c fiber.Ctx) error {
+	tracer := otel.Tracer("day-handler")
+	ctx, span := tracer.Start(c.Context(), "SetDay")
+	defer span.End()
+
 	var dayDTO dto.SetDayDTO
 
 	if err := c.Bind().Body(&dayDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
@@ -40,14 +46,16 @@ func (h *DayHandler) SetDay(c fiber.Ctx) error {
 	}
 
 	if err := h.validator.ValidateData(dayDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
 		})
 	}
 
-	day, err := h.dayService.SetDay(c.Context(), dayDTO)
+	day, err := h.dayService.SetDay(ctx, dayDTO)
 	if err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(dto.HTTPError{
 			Code:    fiber.StatusInternalServerError,
 			Message: err.Error(),

@@ -2,7 +2,11 @@ package logger
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5"
+	"go.opentelemetry.io/contrib/bridges/otelzap"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
+	sdklog "go.opentelemetry.io/otel/sdk/log"
+	"go.opentelemetry.io/otel/sdk/resource"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
@@ -10,7 +14,8 @@ import (
 )
 
 var (
-	Log *logger
+	Log         *logger
+	LogProvider *sdklog.LoggerProvider
 )
 
 type logger struct {
@@ -47,13 +52,24 @@ func New(debug bool, timeZone string) {
 		level = zapcore.InfoLevel
 	}
 
-	consoleEncoder := zapcore.NewConsoleEncoder(encoderConfig)
-	core := zapcore.NewCore(consoleEncoder, zapcore.Lock(os.Stdout), level)
+	provider, err := newLoggerProvider(context.Background())
+
+	if err != nil {
+		panic(err)
+	}
+
+	core := zapcore.NewTee(
+		zapcore.NewCore(zapcore.NewJSONEncoder(encoderConfig), zapcore.AddSync(os.Stdout), level),
+		otelzap.NewCore("internal/adapters/logger", otelzap.WithLoggerProvider(provider)),
+	)
+
 	log := zap.New(core, zap.AddCaller())
 
 	Log = &logger{
 		SugaredLogger: log.Sugar(),
 	}
+
+	LogProvider = provider
 }
 
 // customTimeEncoder форматирует время в GMT+0
@@ -61,34 +77,29 @@ func customTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 	enc.AppendString(t.In(time.FixedZone("GMT+0", 3*60*60)).Format("2006-01-02 15:04:05"))
 }
 
-// Адаптер для pgx
+// Да, плохо, но пришлось эту функцию перенести сюда из app.go
 
-type ZapQueryTracer struct {
-	Log *zap.SugaredLogger
-}
+func newLoggerProvider(ctx context.Context) (*sdklog.LoggerProvider, error) {
+	r, err := resource.Merge(
+		resource.Default(),
+		resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceName("Fiber-Backend"),
+		),
+	)
 
-// TraceQueryStart вызывается в начале выполнения запроса.
-func (t *ZapQueryTracer) TraceQueryStart(
-	ctx context.Context,
-	_ *pgx.Conn,
-	data pgx.TraceQueryStartData,
-) context.Context {
-	t.Log.Infof("Запрос: %s", data.SQL)
-	t.Log.Infof("Параметры: %v", data.Args)
-	return ctx
-}
-
-// TraceQueryEnd вызывается по окончании выполнения запроса.
-func (t *ZapQueryTracer) TraceQueryEnd(
-	_ context.Context,
-	_ *pgx.Conn,
-	data pgx.TraceQueryEndData,
-) {
-	if data.Err != nil {
-		t.Log.Errorw("Запрос завершился с ошибкой",
-			"error", data.Err,
-		)
-	} else {
-		t.Log.Infow("Запрос успешно выполнен")
+	if err != nil {
+		return nil, err
 	}
+
+	logExporter, err := otlploghttp.New(ctx, otlploghttp.WithEndpoint("otel-collector:4318"), otlploghttp.WithInsecure())
+	if err != nil {
+		return nil, err
+	}
+
+	loggerProvider := sdklog.NewLoggerProvider(
+		sdklog.WithProcessor(sdklog.NewBatchProcessor(logExporter)),
+		sdklog.WithResource(r),
+	)
+	return loggerProvider, nil
 }

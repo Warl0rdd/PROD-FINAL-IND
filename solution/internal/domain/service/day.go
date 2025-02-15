@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"go.opentelemetry.io/otel"
 	"solution/internal/domain/dto"
 )
 
@@ -21,6 +22,10 @@ func NewDayService(dayStorage DayStorage) *dayService {
 }
 
 func (s *dayService) SetDay(ctx context.Context, dto dto.SetDayDTO) (int, error) {
+	tracer := otel.Tracer("day-service")
+	ctx, span := tracer.Start(ctx, "SetDay")
+	defer span.End()
+
 	day := dto.CurrentDate
 
 	if day == 0 {

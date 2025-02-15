@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.opentelemetry.io/otel"
 	"solution/internal/domain/entity"
 )
 
@@ -48,6 +49,10 @@ type CreateCampaignRow struct {
 }
 
 func (s *campaignStorage) CreateCampaign(ctx context.Context, arg CreateCampaignParams) (CreateCampaignRow, error) {
+	tracer := otel.Tracer("campaign-service")
+	ctx, span := tracer.Start(ctx, "CreateCampaign")
+	defer span.End()
+
 	row := s.db.QueryRow(ctx, createCampaign,
 		arg.AdvertiserID,
 		arg.ImpressionLimit,
@@ -81,6 +86,10 @@ type DeleteCampaignParams struct {
 }
 
 func (s *campaignStorage) DeleteCampaign(ctx context.Context, arg DeleteCampaignParams) error {
+	tracer := otel.Tracer("campaign-service")
+	ctx, span := tracer.Start(ctx, "DeleteCampaign")
+	defer span.End()
+
 	ct, err := s.db.Exec(ctx, deleteCampaign, arg.ID, arg.AdvertiserID)
 	if ct.RowsAffected() == 0 {
 		return pgx.ErrNoRows
@@ -114,6 +123,10 @@ type GetCampaignByIdParams struct {
 }
 
 func (s *campaignStorage) GetCampaignById(ctx context.Context, arg GetCampaignByIdParams) (entity.Campaign, error) {
+	tracer := otel.Tracer("campaign-service")
+	ctx, span := tracer.Start(ctx, "GetCampaignById")
+	defer span.End()
+
 	row := s.db.QueryRow(ctx, getCampaignById, arg.AdvertiserID, arg.ID)
 	var i entity.Campaign
 	err := row.Scan(
@@ -162,6 +175,10 @@ type GetCampaignWithPaginationParams struct {
 }
 
 func (s *campaignStorage) GetCampaignWithPagination(ctx context.Context, arg GetCampaignWithPaginationParams) ([]entity.Campaign, error) {
+	tracer := otel.Tracer("campaign-service")
+	ctx, span := tracer.Start(ctx, "GetCampaignWithPagination")
+	defer span.End()
+
 	rows, err := s.db.Query(ctx, getCampaignWithPagination, arg.AdvertiserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
@@ -196,6 +213,8 @@ func (s *campaignStorage) GetCampaignWithPagination(ctx context.Context, arg Get
 	return items, nil
 }
 
+// TODO: возможность обновить start_date и end_date (и пофиксить обновление гендера)
+
 const updateCampaign = `-- name: UpdateCampaign :one
 UPDATE campaigns
 SET cost_per_impression = CASE WHEN $3::float != 0 THEN $3 ELSE cost_per_impression END,
@@ -229,6 +248,10 @@ type UpdateCampaignParams struct {
 }
 
 func (s *campaignStorage) UpdateCampaign(ctx context.Context, arg UpdateCampaignParams) (entity.Campaign, error) {
+	tracer := otel.Tracer("campaign-service")
+	ctx, span := tracer.Start(ctx, "UpdateCampaign")
+	defer span.End()
+
 	row := s.db.QueryRow(ctx, updateCampaign,
 		arg.ID,
 		arg.AdvertiserID,

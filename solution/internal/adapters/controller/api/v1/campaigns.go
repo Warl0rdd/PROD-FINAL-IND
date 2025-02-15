@@ -5,6 +5,8 @@ import (
 	"errors"
 	"github.com/gofiber/fiber/v3"
 	"github.com/jackc/pgx/v5"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"solution/cmd/app"
 	"solution/internal/adapters/controller/api/validator"
 	"solution/internal/adapters/database/postgres"
@@ -39,9 +41,14 @@ func NewCampaignHandler(app *app.App) *CampaignHandler {
 }
 
 func (h *CampaignHandler) CreateCampaign(c fiber.Ctx) error {
+	tracer := otel.Tracer("campaign-handler")
+	ctx, span := tracer.Start(c.Context(), "CreateCampaign")
+	defer span.End()
+
 	var campaignDTO dto.CreateCampaignDTO
 
 	if err := c.Bind().URI(&campaignDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
@@ -51,6 +58,7 @@ func (h *CampaignHandler) CreateCampaign(c fiber.Ctx) error {
 	logger.Log.Debugf("campaignDTO: %v", campaignDTO)
 
 	if err := c.Bind().Body(&campaignDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
@@ -60,14 +68,21 @@ func (h *CampaignHandler) CreateCampaign(c fiber.Ctx) error {
 	logger.Log.Debugf("campaignDTO: %v", campaignDTO)
 
 	if err := h.validator.ValidateData(campaignDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
 		})
 	}
 
-	created, err := h.campaignService.CreateCampaign(c.Context(), campaignDTO)
+	span.SetAttributes(
+		attribute.String("advertiserId", campaignDTO.AdvertiserID),
+		attribute.String("endpoint", "/advertisers/{advertiserId}/campaigns"),
+	)
+
+	created, err := h.campaignService.CreateCampaign(ctx, campaignDTO)
 	if err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(dto.HTTPError{
 			Code:    fiber.StatusInternalServerError,
 			Message: err.Error(),
@@ -78,9 +93,14 @@ func (h *CampaignHandler) CreateCampaign(c fiber.Ctx) error {
 }
 
 func (h *CampaignHandler) GetCampaignById(c fiber.Ctx) error {
+	tracer := otel.Tracer("campaign-handler")
+	ctx, span := tracer.Start(c.Context(), "GetCampaignById")
+	defer span.End()
+
 	var campaignDTO dto.GetCampaignByIDDTO
 
 	if err := c.Bind().URI(&campaignDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
@@ -90,14 +110,22 @@ func (h *CampaignHandler) GetCampaignById(c fiber.Ctx) error {
 	logger.Log.Debugf("campaignDTO: %v", campaignDTO)
 
 	if err := h.validator.ValidateData(campaignDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
 		})
 	}
 
-	campaign, err := h.campaignService.GetCampaignById(c.Context(), campaignDTO)
+	campaign, err := h.campaignService.GetCampaignById(ctx, campaignDTO)
+
+	span.SetAttributes(
+		attribute.String("advertiserId", campaignDTO.AdvertiserID),
+		attribute.String("endpoint", "/advertisers/{advertiserId}/campaigns/{campaignId}"),
+	)
+
 	if err != nil {
+		span.RecordError(err)
 		if campaign == (dto.CampaignDTO{}) {
 			return c.Status(fiber.StatusNotFound).JSON(dto.HTTPError{
 				Code:    fiber.StatusNotFound,
@@ -115,9 +143,14 @@ func (h *CampaignHandler) GetCampaignById(c fiber.Ctx) error {
 }
 
 func (h *CampaignHandler) GetCampaignWithPagination(c fiber.Ctx) error {
+	tracer := otel.Tracer("campaign-handler")
+	ctx, span := tracer.Start(c.Context(), "GetCampaignWithPagination")
+	defer span.End()
+
 	var campaignDTO dto.GetCampaignsWithPaginationDTO
 
 	if err := c.Bind().URI(&campaignDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
@@ -125,6 +158,7 @@ func (h *CampaignHandler) GetCampaignWithPagination(c fiber.Ctx) error {
 	}
 
 	if err := c.Bind().Query(&campaignDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
@@ -132,6 +166,7 @@ func (h *CampaignHandler) GetCampaignWithPagination(c fiber.Ctx) error {
 	}
 
 	if err := h.validator.ValidateData(campaignDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
@@ -144,8 +179,14 @@ func (h *CampaignHandler) GetCampaignWithPagination(c fiber.Ctx) error {
 		campaignDTO.Offset = (campaignDTO.Page - 1) * campaignDTO.Limit
 	}
 
-	campaigns, err := h.campaignService.GetCampaignWithPagination(c.Context(), campaignDTO)
+	span.SetAttributes(
+		attribute.String("advertiserId", campaignDTO.AdvertiserID),
+		attribute.String("endpoint", "/advertisers/{advertiserId}/campaigns"),
+	)
+
+	campaigns, err := h.campaignService.GetCampaignWithPagination(ctx, campaignDTO)
 	if err != nil {
+		span.RecordError(err)
 		if len(campaigns) == 0 {
 			return c.Status(fiber.StatusNotFound).JSON(dto.HTTPError{
 				Code:    fiber.StatusNotFound,
@@ -163,10 +204,14 @@ func (h *CampaignHandler) GetCampaignWithPagination(c fiber.Ctx) error {
 }
 
 func (h *CampaignHandler) UpdateCampaign(c fiber.Ctx) error {
+	tracer := otel.Tracer("campaign-handler")
+	ctx, span := tracer.Start(c.Context(), "UpdateCampaign")
+	defer span.End()
 
 	var campaignDTO dto.UpdateCampaignDTO
 
 	if err := c.Bind().URI(&campaignDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
@@ -174,6 +219,7 @@ func (h *CampaignHandler) UpdateCampaign(c fiber.Ctx) error {
 	}
 
 	if err := c.Bind().Body(&campaignDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
@@ -181,14 +227,21 @@ func (h *CampaignHandler) UpdateCampaign(c fiber.Ctx) error {
 	}
 
 	if err := h.validator.ValidateData(campaignDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
 		})
 	}
 
-	updated, err := h.campaignService.UpdateCampaign(c.Context(), campaignDTO)
+	span.SetAttributes(
+		attribute.String("advertiserId", campaignDTO.AdvertiserID),
+		attribute.String("endpoint", "/advertisers/{advertiserId}/campaigns/{campaignId}"),
+	)
+
+	updated, err := h.campaignService.UpdateCampaign(ctx, campaignDTO)
 	if err != nil {
+		span.RecordError(err)
 		if errors.Is(err, errorz.Forbidden) {
 			return c.Status(fiber.StatusForbidden).JSON(dto.HTTPError{
 				Code:    fiber.StatusForbidden,
@@ -213,9 +266,14 @@ func (h *CampaignHandler) UpdateCampaign(c fiber.Ctx) error {
 }
 
 func (h *CampaignHandler) DeleteCampaign(c fiber.Ctx) error {
+	tracer := otel.Tracer("campaign-handler")
+	ctx, span := tracer.Start(c.Context(), "DeleteCampaign")
+	defer span.End()
+
 	var campaignDTO dto.DeleteCampaignDTO
 
 	if err := c.Bind().URI(&campaignDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
@@ -223,14 +281,21 @@ func (h *CampaignHandler) DeleteCampaign(c fiber.Ctx) error {
 	}
 
 	if err := h.validator.ValidateData(campaignDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
 		})
 	}
 
-	err := h.campaignService.DeleteCampaign(c.Context(), campaignDTO)
+	span.SetAttributes(
+		attribute.String("advertiserId", campaignDTO.AdvertiserID),
+		attribute.String("endpoint", "/advertisers/{advertiserId}/campaigns/{campaignId}"),
+	)
+
+	err := h.campaignService.DeleteCampaign(ctx, campaignDTO)
 	if err != nil {
+		span.RecordError(err)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return c.Status(fiber.StatusNotFound).JSON(dto.HTTPError{
 				Code:    fiber.StatusNotFound,

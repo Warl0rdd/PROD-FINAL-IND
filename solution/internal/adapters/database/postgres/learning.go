@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.opentelemetry.io/otel"
 )
 
 type learningStorage struct {
@@ -43,6 +44,10 @@ type GetImpressionsForLearningRow struct {
 }
 
 func (s *learningStorage) GetImpressionsForLearning(ctx context.Context) ([]GetImpressionsForLearningRow, error) {
+	tracer := otel.Tracer("learning-storage")
+	ctx, span := tracer.Start(ctx, "GetImpressionsForLearning")
+	defer span.End()
+
 	rows, err := s.db.Query(ctx, getImpressionsForLearning)
 	if err != nil {
 		return nil, err
@@ -75,6 +80,10 @@ WHERE id = $1
 `
 
 func (s *learningStorage) UpdateLearnedImpression(ctx context.Context, id uuid.UUID) error {
+	tracer := otel.Tracer("learning-storage")
+	ctx, span := tracer.Start(ctx, "UpdateLearnedImpression")
+	defer span.End()
+
 	_, err := s.db.Exec(ctx, updateLearnedImpression, id)
 	return err
 }

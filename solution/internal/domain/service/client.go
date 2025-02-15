@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"solution/internal/adapters/database/postgres"
 	"solution/internal/domain/dto"
 	"solution/internal/domain/entity"
@@ -26,6 +28,12 @@ func NewClientService(clientStorage clientStorage) *clientService {
 func (s *clientService) CreateClient(ctx context.Context, dto []dto.CreateClientDTO) ([]entity.Client, error) {
 	result := make([]entity.Client, len(dto))
 
+	tracer := otel.Tracer("client-service")
+	ctx, span := tracer.Start(ctx, "CreateClient")
+	defer span.End()
+
+	span.SetAttributes(attribute.Int("clients.count", len(dto)))
+
 	for _, d := range dto {
 		client, err := s.clientStorage.CreateClient(ctx, postgres.CreateClientParams{
 			ID:       uuid.MustParse(d.ClientId),
@@ -44,5 +52,11 @@ func (s *clientService) CreateClient(ctx context.Context, dto []dto.CreateClient
 }
 
 func (s *clientService) GetClientById(ctx context.Context, id uuid.UUID) (entity.Client, error) {
+	tracer := otel.Tracer("client-service")
+	ctx, span := tracer.Start(ctx, "GetClientById")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("client_id", id.String()))
+
 	return s.clientStorage.GetClientById(ctx, id)
 }

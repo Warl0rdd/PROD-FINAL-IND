@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"solution/cmd/app"
 	"solution/internal/adapters/controller/api/validator"
 	"solution/internal/adapters/database/postgres"
@@ -30,9 +32,14 @@ func NewMlScoreHandler(app *app.App) *MlScoreHandler {
 }
 
 func (h *MlScoreHandler) InsertOrUpdateMlScore(c fiber.Ctx) error {
+	tracer := otel.Tracer("ml-score-handler")
+	ctx, span := tracer.Start(c.Context(), "InsertOrUpdateMlScore")
+	defer span.End()
+
 	var MlScoreDTO dto.CreateMlScoreDTO
 
 	if err := c.Bind().Body(&MlScoreDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
@@ -40,14 +47,22 @@ func (h *MlScoreHandler) InsertOrUpdateMlScore(c fiber.Ctx) error {
 	}
 
 	if err := h.validator.ValidateData(MlScoreDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
 		})
 	}
 
-	_, err := h.mlScoreService.InsertOrUpdateMlScore(c.Context(), MlScoreDTO)
+	span.SetAttributes(
+		attribute.String("advertiserId", MlScoreDTO.AdvertiserID),
+		attribute.String("clientId", MlScoreDTO.ClientID),
+		attribute.String("endpoint", "/advertisers/{advertiserId}/ml-scores"),
+	)
+
+	_, err := h.mlScoreService.InsertOrUpdateMlScore(ctx, MlScoreDTO)
 	if err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(dto.HTTPError{
 			Code:    fiber.StatusInternalServerError,
 			Message: err.Error(),

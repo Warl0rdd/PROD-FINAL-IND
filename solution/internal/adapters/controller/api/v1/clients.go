@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"solution/cmd/app"
 	"solution/internal/adapters/controller/api/validator"
 	"solution/internal/adapters/database/postgres"
@@ -32,19 +34,30 @@ func NewClientHandler(app *app.App) *ClientHandler {
 }
 
 func (h *ClientHandler) CreateClients(c fiber.Ctx) error {
+	tracer := otel.Tracer("client-handler")
+	ctx, span := tracer.Start(c.Context(), "CreateClients")
+	defer span.End()
+
 	var DTOs []dto.CreateClientDTO
 
 	if err := c.Bind().Body(&DTOs); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
 		})
 	}
 
+	span.SetAttributes(
+		attribute.Int("clients.count", len(DTOs)),
+		attribute.String("endpoint", "/clients/bulk"),
+	)
+
 	logger.Log.Debugf("DTOs: %v", DTOs)
 
 	for _, v := range DTOs {
 		if err := h.validator.ValidateData(v); err != nil {
+			span.RecordError(err)
 			return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 				Code:    fiber.StatusBadRequest,
 				Message: err.Error(),
@@ -52,8 +65,9 @@ func (h *ClientHandler) CreateClients(c fiber.Ctx) error {
 		}
 	}
 
-	_, err := h.clientService.CreateClient(c.Context(), DTOs)
+	_, err := h.clientService.CreateClient(ctx, DTOs)
 	if err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(dto.HTTPError{
 			Code:    fiber.StatusInternalServerError,
 			Message: err.Error(),
@@ -64,9 +78,14 @@ func (h *ClientHandler) CreateClients(c fiber.Ctx) error {
 }
 
 func (h *ClientHandler) GetClientById(c fiber.Ctx) error {
+	tracer := otel.Tracer("client-handler")
+	ctx, span := tracer.Start(c.Context(), "GetClientById")
+	defer span.End()
+
 	var getClientDTO dto.GetClientByIdDTO
 
 	if err := c.Bind().URI(&getClientDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
@@ -74,13 +93,19 @@ func (h *ClientHandler) GetClientById(c fiber.Ctx) error {
 	}
 
 	if err := h.validator.ValidateData(getClientDTO); err != nil {
+		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
 		})
 	}
 
-	client, err := h.clientService.GetClientById(c.Context(), uuid.MustParse(getClientDTO.ClientId))
+	span.SetAttributes(
+		attribute.String("clientId", getClientDTO.ClientId),
+		attribute.String("endpoint", "/clients/{clientId}"),
+	)
+
+	client, err := h.clientService.GetClientById(ctx, uuid.MustParse(getClientDTO.ClientId))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(dto.HTTPError{
 			Code:    fiber.StatusInternalServerError,

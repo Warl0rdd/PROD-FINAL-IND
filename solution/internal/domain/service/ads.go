@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"solution/internal/adapters/database/postgres"
 	"solution/internal/adapters/logger"
 	"solution/internal/domain/common/errorz"
@@ -44,6 +46,10 @@ func NewAdsService(adsStorage AdsStorage, dayStorage DayStorage, learningStorage
 }
 
 func (s *adsService) GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDTO, error) {
+	tracer := otel.Tracer("ads-service")
+	ctx, span := tracer.Start(ctx, "GetAds")
+	defer span.End()
+
 	day, err := s.dayStorage.GetDay(ctx)
 	if err != nil {
 		return dto.AdDTO{}, err
@@ -97,10 +103,16 @@ func (s *adsService) GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDT
 		return dto.AdDTO{}, errImp
 	}
 
+	span.SetAttributes(attribute.Float64("score", maxKey))
+
 	return scores[maxKey], nil
 }
 
 func (s *adsService) Click(ctx context.Context, clickDTO dto.AddClickDTO) error {
+	tracer := otel.Tracer("ads-service")
+	ctx, span := tracer.Start(ctx, "Click")
+	defer span.End()
+
 	day, err := s.dayStorage.GetDay(ctx)
 	if err != nil {
 		return err
@@ -120,7 +132,9 @@ func (s *adsService) Click(ctx context.Context, clickDTO dto.AddClickDTO) error 
 }
 
 func (s *adsService) AdjustModel() {
-	ctx := context.Background()
+	tracer := otel.Tracer("ads-service")
+	ctx, span := tracer.Start(context.Background(), "AdjustModel")
+	defer span.End()
 
 	oldR0 := s.redisLearningStorage.GetR0(ctx)
 	data, err := s.postgresLearningStorage.GetImpressionsForLearning(ctx)
@@ -139,4 +153,9 @@ func (s *adsService) AdjustModel() {
 			logger.Log.Error(err)
 		}
 	}
+
+	span.SetAttributes(
+		attribute.Float64("oldR0", oldR0),
+		attribute.Float64("newR0", newR0),
+	)
 }

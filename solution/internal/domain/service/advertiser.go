@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
 	"solution/internal/adapters/database/postgres"
 	"solution/internal/domain/dto"
 	"solution/internal/domain/entity"
@@ -24,6 +25,10 @@ func NewAdvertisersService(advertisersStorage advertisersStorage) *advertisersSe
 }
 
 func (s *advertisersService) CreateAdvertiser(ctx context.Context, dto dto.CreateAdvertiserDTO) (entity.Advertiser, error) {
+	tracer := otel.Tracer("advertisers-service")
+	ctx, span := tracer.Start(ctx, "CreateAdvertiser")
+	defer span.End()
+
 	return s.advertisersStorage.CreateAdvertiser(ctx, postgres.CreateAdvertiserParams{
 		ID:   uuid.MustParse(dto.AdvertiserID),
 		Name: dto.Name,
@@ -31,5 +36,9 @@ func (s *advertisersService) CreateAdvertiser(ctx context.Context, dto dto.Creat
 }
 
 func (s *advertisersService) GetAdvertiserById(ctx context.Context, dto dto.GetAdvertiserByIdDTO) (entity.Advertiser, error) {
+	tracer := otel.Tracer("advertisers-service")
+	ctx, span := tracer.Start(ctx, "GetAdvertiserById")
+	defer span.End()
+
 	return s.advertisersStorage.GetAdvertiserById(ctx, uuid.MustParse(dto.AdvertiserID))
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.opentelemetry.io/otel"
 	"solution/internal/domain/entity"
 )
 
@@ -30,6 +31,10 @@ type CreateAdvertiserParams struct {
 }
 
 func (s *advertiserStorage) CreateAdvertiser(ctx context.Context, arg CreateAdvertiserParams) (entity.Advertiser, error) {
+	tracer := otel.Tracer("advertiser-storage")
+	ctx, span := tracer.Start(ctx, "CreateAdvertiser")
+	defer span.End()
+
 	row := s.db.QueryRow(ctx, createAdvertiser, arg.ID, arg.Name)
 	var i entity.Advertiser
 	err := row.Scan(&i.ID, &i.Name)
@@ -43,6 +48,10 @@ WHERE id = $1
 `
 
 func (s *advertiserStorage) GetAdvertiserById(ctx context.Context, id uuid.UUID) (entity.Advertiser, error) {
+	tracer := otel.Tracer("advertiser-storage")
+	ctx, span := tracer.Start(ctx, "GetAdvertiserById")
+	defer span.End()
+
 	row := s.db.QueryRow(ctx, getAdvertiserById, id)
 	var i entity.Advertiser
 	err := row.Scan(&i.ID, &i.Name)

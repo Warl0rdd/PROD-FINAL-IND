@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.opentelemetry.io/otel"
 	"solution/internal/domain/entity"
 )
 
@@ -37,6 +38,10 @@ type CreateClientParams struct {
 }
 
 func (s *clientStorage) CreateClient(ctx context.Context, arg CreateClientParams) (entity.Client, error) {
+	tracer := otel.Tracer("client-storage")
+	ctx, span := tracer.Start(ctx, "CreateClient")
+	defer span.End()
+
 	row := s.db.QueryRow(ctx, createClient,
 		arg.ID,
 		arg.Login,
@@ -52,6 +57,11 @@ func (s *clientStorage) CreateClient(ctx context.Context, arg CreateClientParams
 		&i.Location,
 		&i.Gender,
 	)
+
+	if err != nil {
+		span.RecordError(err)
+	}
+
 	return i, err
 }
 
@@ -60,6 +70,10 @@ SELECT id, login, age, location, gender FROM clients WHERE id = $1
 `
 
 func (s *clientStorage) GetClientById(ctx context.Context, id uuid.UUID) (entity.Client, error) {
+	tracer := otel.Tracer("client-storage")
+	ctx, span := tracer.Start(ctx, "GetClientById")
+	defer span.End()
+
 	row := s.db.QueryRow(ctx, getClientById, id)
 	var i entity.Client
 	err := row.Scan(
