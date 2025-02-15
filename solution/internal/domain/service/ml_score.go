@@ -25,7 +25,7 @@ func NewMlScoreService(mlScoreStorage mlScoreStorage) *mlScoreService {
 
 func (s *mlScoreService) InsertOrUpdateMlScore(ctx context.Context, dto dto.CreateMlScoreDTO) (uuid.UUID, error) {
 	tracer := otel.Tracer("ml-score-service")
-	ctx, span := tracer.Start(ctx, "InsertOrUpdateMlScore")
+	ctx, span := tracer.Start(ctx, "ml-score-service")
 	defer span.End()
 
 	return s.mlScoreStorage.InsertOrUpdateMlScore(ctx, postgres.InsertOrUpdateMlScoreParams{

@@ -28,7 +28,7 @@ func NewStatsService(statsStorage StatsStorage) *StatsService {
 
 func (s *StatsService) GetDailyStatsByAdvertiserID(ctx context.Context, statsDTO dto.GetStatsByAdvertiserIDDTO) ([]dto.StatsDTO, error) {
 	tracer := otel.Tracer("stats-service")
-	ctx, span := tracer.Start(ctx, "GetDailyStatsByAdvertiserID")
+	ctx, span := tracer.Start(ctx, "stats-service")
 	defer span.End()
 
 	stats, err := s.statsStorage.GetDailyStatsByAdvertiserID(ctx, uuid.MustParse(statsDTO.AdvertiserID))
@@ -59,7 +59,7 @@ func (s *StatsService) GetDailyStatsByAdvertiserID(ctx context.Context, statsDTO
 
 func (s *StatsService) GetDailyStatsByCampaignID(ctx context.Context, statsDTO dto.GetStatsByCampaignIDDTO) ([]dto.StatsDTO, error) {
 	tracer := otel.Tracer("stats-service")
-	ctx, span := tracer.Start(ctx, "GetDailyStatsByCampaignID")
+	ctx, span := tracer.Start(ctx, "stats-service")
 	defer span.End()
 
 	stats, err := s.statsStorage.GetDailyStatsByCampaignID(ctx, uuid.MustParse(statsDTO.CampaignID))
@@ -90,7 +90,7 @@ func (s *StatsService) GetDailyStatsByCampaignID(ctx context.Context, statsDTO d
 
 func (s *StatsService) GetStatsByAdvertiserID(ctx context.Context, statsDTO dto.GetStatsByAdvertiserIDDTO) (dto.StatsDTO, error) {
 	tracer := otel.Tracer("stats-service")
-	ctx, span := tracer.Start(ctx, "GetStatsByAdvertiserID")
+	ctx, span := tracer.Start(ctx, "stats-service")
 	defer span.End()
 
 	stats, err := s.statsStorage.GetStatsByAdvertiserID(ctx, uuid.MustParse(statsDTO.AdvertiserID))
@@ -111,7 +111,7 @@ func (s *StatsService) GetStatsByAdvertiserID(ctx context.Context, statsDTO dto.
 
 func (s *StatsService) GetStatsByCampaignID(ctx context.Context, statsDTO dto.GetStatsByCampaignIDDTO) (dto.StatsDTO, error) {
 	tracer := otel.Tracer("stats-service")
-	ctx, span := tracer.Start(ctx, "GetStatsByCampaignID")
+	ctx, span := tracer.Start(ctx, "stats-service")
 	defer span.End()
 
 	stats, err := s.statsStorage.GetStatsByCampaignID(ctx, uuid.MustParse(statsDTO.CampaignID))

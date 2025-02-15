@@ -37,7 +37,7 @@ func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.Cr
 	// А если не передали верхнюю границу возраста - ставим максимальное, что бы сортировка таргетинга по верхней границе возраста не применялась
 
 	tracer := otel.Tracer("campaign-service")
-	ctx, span := tracer.Start(ctx, "CreateCampaign")
+	ctx, span := tracer.Start(ctx, "campaign-service")
 	defer span.End()
 
 	var ageTo int32
@@ -92,7 +92,7 @@ func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.Cr
 
 func (s *CampaignService) GetCampaignById(ctx context.Context, campaignDTO dto.GetCampaignByIDDTO) (dto.CampaignDTO, error) {
 	tracer := otel.Tracer("campaign-service")
-	ctx, span := tracer.Start(ctx, "GetCampaignById")
+	ctx, span := tracer.Start(ctx, "campaign-service")
 	defer span.End()
 
 	campaign, err := s.campaignStorage.GetCampaignById(ctx, postgres.GetCampaignByIdParams{
@@ -124,7 +124,7 @@ func (s *CampaignService) GetCampaignById(ctx context.Context, campaignDTO dto.G
 
 func (s *CampaignService) GetCampaignWithPagination(ctx context.Context, campaignDTO dto.GetCampaignsWithPaginationDTO) ([]dto.CampaignDTO, error) {
 	tracer := otel.Tracer("campaign-service")
-	ctx, span := tracer.Start(ctx, "GetCampaignWithPagination")
+	ctx, span := tracer.Start(ctx, "campaign-service")
 	defer span.End()
 
 	campaigns, err := s.campaignStorage.GetCampaignWithPagination(ctx, postgres.GetCampaignWithPaginationParams{
@@ -161,7 +161,7 @@ func (s *CampaignService) GetCampaignWithPagination(ctx context.Context, campaig
 
 func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.UpdateCampaignDTO) (dto.CampaignDTO, error) {
 	tracer := otel.Tracer("campaign-service")
-	ctx, span := tracer.Start(ctx, "UpdateCampaign")
+	ctx, span := tracer.Start(ctx, "campaign-service")
 	defer span.End()
 
 	day, err := s.dayStorage.GetDay(ctx)
@@ -235,7 +235,7 @@ func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.Up
 
 func (s *CampaignService) DeleteCampaign(ctx context.Context, campaignDTO dto.DeleteCampaignDTO) error {
 	tracer := otel.Tracer("campaign-service")
-	ctx, span := tracer.Start(ctx, "DeleteCampaign")
+	ctx, span := tracer.Start(ctx, "campaign-service")
 	defer span.End()
 
 	return s.campaignStorage.DeleteCampaign(ctx, postgres.DeleteCampaignParams{

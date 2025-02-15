@@ -31,7 +31,7 @@ type AddClickParams struct {
 
 func (s *adsStorage) AddClick(ctx context.Context, arg AddClickParams) error {
 	tracer := otel.Tracer("ads-storage")
-	ctx, span := tracer.Start(ctx, "AddClick")
+	ctx, span := tracer.Start(ctx, "ads-storage")
 	defer span.End()
 
 	_, err := s.db.Exec(ctx, addClick, arg.CampaignID, arg.ClientID, arg.Day)
@@ -53,7 +53,7 @@ type AddImpressionParams struct {
 
 func (s *adsStorage) AddImpression(ctx context.Context, arg AddImpressionParams) error {
 	tracer := otel.Tracer("ads-storage")
-	ctx, span := tracer.Start(ctx, "AddImpression")
+	ctx, span := tracer.Start(ctx, "ads-storage")
 	defer span.End()
 
 	_, err := s.db.Exec(ctx, addImpression,
@@ -111,7 +111,7 @@ type GetEligibleAdsRow struct {
 
 func (s *adsStorage) GetEligibleAds(ctx context.Context, arg GetEligibleAdsParams) ([]GetEligibleAdsRow, error) {
 	tracer := otel.Tracer("ads-storage")
-	ctx, span := tracer.Start(ctx, "GetEligibleAds")
+	ctx, span := tracer.Start(ctx, "ads-storage")
 	defer span.End()
 
 	rows, err := s.db.Query(ctx, getEligibleAds, arg.ClientID, arg.Day)

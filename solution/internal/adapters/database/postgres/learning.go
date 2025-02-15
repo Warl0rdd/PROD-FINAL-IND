@@ -45,7 +45,7 @@ type GetImpressionsForLearningRow struct {
 
 func (s *learningStorage) GetImpressionsForLearning(ctx context.Context) ([]GetImpressionsForLearningRow, error) {
 	tracer := otel.Tracer("learning-storage")
-	ctx, span := tracer.Start(ctx, "GetImpressionsForLearning")
+	ctx, span := tracer.Start(ctx, "learning-storage")
 	defer span.End()
 
 	rows, err := s.db.Query(ctx, getImpressionsForLearning)
@@ -81,7 +81,7 @@ WHERE id = $1
 
 func (s *learningStorage) UpdateLearnedImpression(ctx context.Context, id uuid.UUID) error {
 	tracer := otel.Tracer("learning-storage")
-	ctx, span := tracer.Start(ctx, "UpdateLearnedImpression")
+	ctx, span := tracer.Start(ctx, "learning-storage")
 	defer span.End()
 
 	_, err := s.db.Exec(ctx, updateLearnedImpression, id)

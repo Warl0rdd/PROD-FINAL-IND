@@ -47,7 +47,7 @@ func NewAdsService(adsStorage AdsStorage, dayStorage DayStorage, learningStorage
 
 func (s *adsService) GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDTO, error) {
 	tracer := otel.Tracer("ads-service")
-	ctx, span := tracer.Start(ctx, "GetAds")
+	ctx, span := tracer.Start(ctx, "ads-service")
 	defer span.End()
 
 	day, err := s.dayStorage.GetDay(ctx)
@@ -110,7 +110,7 @@ func (s *adsService) GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDT
 
 func (s *adsService) Click(ctx context.Context, clickDTO dto.AddClickDTO) error {
 	tracer := otel.Tracer("ads-service")
-	ctx, span := tracer.Start(ctx, "Click")
+	ctx, span := tracer.Start(ctx, "ads-service")
 	defer span.End()
 
 	day, err := s.dayStorage.GetDay(ctx)
@@ -133,7 +133,7 @@ func (s *adsService) Click(ctx context.Context, clickDTO dto.AddClickDTO) error 
 
 func (s *adsService) AdjustModel() {
 	tracer := otel.Tracer("ads-service")
-	ctx, span := tracer.Start(context.Background(), "AdjustModel")
+	ctx, span := tracer.Start(context.Background(), "ads-service")
 	defer span.End()
 
 	oldR0 := s.redisLearningStorage.GetR0(ctx)

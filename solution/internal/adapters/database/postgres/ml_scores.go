@@ -32,7 +32,7 @@ type InsertOrUpdateMlScoreParams struct {
 
 func (s *mlScoreStorage) InsertOrUpdateMlScore(ctx context.Context, arg InsertOrUpdateMlScoreParams) (uuid.UUID, error) {
 	tracer := otel.Tracer("ml-score-storage")
-	ctx, span := tracer.Start(ctx, "InsertOrUpdateMlScore")
+	ctx, span := tracer.Start(ctx, "ml-score-storage")
 	defer span.End()
 
 	row := s.db.QueryRow(ctx, insertOrUpdateMlScore, arg.ClientID, arg.AdvertiserID, arg.Score)

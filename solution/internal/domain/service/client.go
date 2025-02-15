@@ -29,7 +29,7 @@ func (s *clientService) CreateClient(ctx context.Context, dto []dto.CreateClient
 	result := make([]entity.Client, len(dto))
 
 	tracer := otel.Tracer("client-service")
-	ctx, span := tracer.Start(ctx, "CreateClient")
+	ctx, span := tracer.Start(ctx, "client-service")
 	defer span.End()
 
 	span.SetAttributes(attribute.Int("clients.count", len(dto)))
@@ -53,7 +53,7 @@ func (s *clientService) CreateClient(ctx context.Context, dto []dto.CreateClient
 
 func (s *clientService) GetClientById(ctx context.Context, id uuid.UUID) (entity.Client, error) {
 	tracer := otel.Tracer("client-service")
-	ctx, span := tracer.Start(ctx, "GetClientById")
+	ctx, span := tracer.Start(ctx, "client-service")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("client_id", id.String()))

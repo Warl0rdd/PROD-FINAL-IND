@@ -64,7 +64,7 @@ type GetDailyStatsByAdvertiserIDRow struct {
 
 func (s *statsStorage) GetDailyStatsByAdvertiserID(ctx context.Context, advertiserID uuid.UUID) ([]GetDailyStatsByAdvertiserIDRow, error) {
 	tracer := otel.Tracer("stats-storage")
-	ctx, span := tracer.Start(ctx, "GetDailyStatsByAdvertiserID")
+	ctx, span := tracer.Start(ctx, "stats-storage")
 	defer span.End()
 
 	rows, err := s.db.Query(ctx, getDailyStatsByAdvertiserID, advertiserID)
@@ -142,7 +142,7 @@ type GetDailyStatsByCampaignIDRow struct {
 
 func (s *statsStorage) GetDailyStatsByCampaignID(ctx context.Context, id uuid.UUID) ([]GetDailyStatsByCampaignIDRow, error) {
 	tracer := otel.Tracer("stats-storage")
-	ctx, span := tracer.Start(ctx, "GetDailyStatsByCampaignID")
+	ctx, span := tracer.Start(ctx, "stats-storage")
 	defer span.End()
 
 	rows, err := s.db.Query(ctx, getDailyStatsByCampaignID, id)
@@ -211,7 +211,7 @@ type GetStatsByAdvertiserIDRow struct {
 
 func (s *statsStorage) GetStatsByAdvertiserID(ctx context.Context, advertiserID uuid.UUID) (GetStatsByAdvertiserIDRow, error) {
 	tracer := otel.Tracer("stats-storage")
-	ctx, span := tracer.Start(ctx, "GetStatsByAdvertiserID")
+	ctx, span := tracer.Start(ctx, "stats-storage")
 	defer span.End()
 
 	row := s.db.QueryRow(ctx, getStatsByAdvertiserID, advertiserID)
@@ -262,7 +262,7 @@ type GetStatsByCampaignIDRow struct {
 
 func (s *statsStorage) GetStatsByCampaignID(ctx context.Context, id uuid.UUID) (GetStatsByCampaignIDRow, error) {
 	tracer := otel.Tracer("stats-storage")
-	ctx, span := tracer.Start(ctx, "GetStatsByCampaignID")
+	ctx, span := tracer.Start(ctx, "stats-storage")
 	defer span.End()
 
 	row := s.db.QueryRow(ctx, getStatsByCampaignID, id)

@@ -50,7 +50,7 @@ type CreateCampaignRow struct {
 
 func (s *campaignStorage) CreateCampaign(ctx context.Context, arg CreateCampaignParams) (CreateCampaignRow, error) {
 	tracer := otel.Tracer("campaign-service")
-	ctx, span := tracer.Start(ctx, "CreateCampaign")
+	ctx, span := tracer.Start(ctx, "campaign-service")
 	defer span.End()
 
 	row := s.db.QueryRow(ctx, createCampaign,
@@ -87,7 +87,7 @@ type DeleteCampaignParams struct {
 
 func (s *campaignStorage) DeleteCampaign(ctx context.Context, arg DeleteCampaignParams) error {
 	tracer := otel.Tracer("campaign-service")
-	ctx, span := tracer.Start(ctx, "DeleteCampaign")
+	ctx, span := tracer.Start(ctx, "campaign-service")
 	defer span.End()
 
 	ct, err := s.db.Exec(ctx, deleteCampaign, arg.ID, arg.AdvertiserID)
@@ -124,7 +124,7 @@ type GetCampaignByIdParams struct {
 
 func (s *campaignStorage) GetCampaignById(ctx context.Context, arg GetCampaignByIdParams) (entity.Campaign, error) {
 	tracer := otel.Tracer("campaign-service")
-	ctx, span := tracer.Start(ctx, "GetCampaignById")
+	ctx, span := tracer.Start(ctx, "campaign-service")
 	defer span.End()
 
 	row := s.db.QueryRow(ctx, getCampaignById, arg.AdvertiserID, arg.ID)
@@ -176,7 +176,7 @@ type GetCampaignWithPaginationParams struct {
 
 func (s *campaignStorage) GetCampaignWithPagination(ctx context.Context, arg GetCampaignWithPaginationParams) ([]entity.Campaign, error) {
 	tracer := otel.Tracer("campaign-service")
-	ctx, span := tracer.Start(ctx, "GetCampaignWithPagination")
+	ctx, span := tracer.Start(ctx, "campaign-service")
 	defer span.End()
 
 	rows, err := s.db.Query(ctx, getCampaignWithPagination, arg.AdvertiserID, arg.Limit, arg.Offset)
@@ -249,7 +249,7 @@ type UpdateCampaignParams struct {
 
 func (s *campaignStorage) UpdateCampaign(ctx context.Context, arg UpdateCampaignParams) (entity.Campaign, error) {
 	tracer := otel.Tracer("campaign-service")
-	ctx, span := tracer.Start(ctx, "UpdateCampaign")
+	ctx, span := tracer.Start(ctx, "campaign-service")
 	defer span.End()
 
 	row := s.db.QueryRow(ctx, updateCampaign,

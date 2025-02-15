@@ -26,7 +26,7 @@ func NewAdvertisersService(advertisersStorage advertisersStorage) *advertisersSe
 
 func (s *advertisersService) CreateAdvertiser(ctx context.Context, dto dto.CreateAdvertiserDTO) (entity.Advertiser, error) {
 	tracer := otel.Tracer("advertisers-service")
-	ctx, span := tracer.Start(ctx, "CreateAdvertiser")
+	ctx, span := tracer.Start(ctx, "advertisers-service")
 	defer span.End()
 
 	return s.advertisersStorage.CreateAdvertiser(ctx, postgres.CreateAdvertiserParams{
@@ -37,7 +37,7 @@ func (s *advertisersService) CreateAdvertiser(ctx context.Context, dto dto.Creat
 
 func (s *advertisersService) GetAdvertiserById(ctx context.Context, dto dto.GetAdvertiserByIdDTO) (entity.Advertiser, error) {
 	tracer := otel.Tracer("advertisers-service")
-	ctx, span := tracer.Start(ctx, "GetAdvertiserById")
+	ctx, span := tracer.Start(ctx, "advertisers-service")
 	defer span.End()
 
 	return s.advertisersStorage.GetAdvertiserById(ctx, uuid.MustParse(dto.AdvertiserID))

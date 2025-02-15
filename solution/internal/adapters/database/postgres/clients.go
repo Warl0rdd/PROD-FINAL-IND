@@ -39,7 +39,7 @@ type CreateClientParams struct {
 
 func (s *clientStorage) CreateClient(ctx context.Context, arg CreateClientParams) (entity.Client, error) {
 	tracer := otel.Tracer("client-storage")
-	ctx, span := tracer.Start(ctx, "CreateClient")
+	ctx, span := tracer.Start(ctx, "client-storage")
 	defer span.End()
 
 	row := s.db.QueryRow(ctx, createClient,
@@ -71,7 +71,7 @@ SELECT id, login, age, location, gender FROM clients WHERE id = $1
 
 func (s *clientStorage) GetClientById(ctx context.Context, id uuid.UUID) (entity.Client, error) {
 	tracer := otel.Tracer("client-storage")
-	ctx, span := tracer.Start(ctx, "GetClientById")
+	ctx, span := tracer.Start(ctx, "client-storage")
 	defer span.End()
 
 	row := s.db.QueryRow(ctx, getClientById, id)

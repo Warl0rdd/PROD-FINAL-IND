@@ -32,7 +32,7 @@ type CreateAdvertiserParams struct {
 
 func (s *advertiserStorage) CreateAdvertiser(ctx context.Context, arg CreateAdvertiserParams) (entity.Advertiser, error) {
 	tracer := otel.Tracer("advertiser-storage")
-	ctx, span := tracer.Start(ctx, "CreateAdvertiser")
+	ctx, span := tracer.Start(ctx, "advertiser-storage")
 	defer span.End()
 
 	row := s.db.QueryRow(ctx, createAdvertiser, arg.ID, arg.Name)
@@ -49,7 +49,7 @@ WHERE id = $1
 
 func (s *advertiserStorage) GetAdvertiserById(ctx context.Context, id uuid.UUID) (entity.Advertiser, error) {
 	tracer := otel.Tracer("advertiser-storage")
-	ctx, span := tracer.Start(ctx, "GetAdvertiserById")
+	ctx, span := tracer.Start(ctx, "advertiser-storage")
 	defer span.End()
 
 	row := s.db.QueryRow(ctx, getAdvertiserById, id)
