@@ -51,7 +51,7 @@ services:
     ports:
       - "3001:3000"
     volumes:
-      - ./grafana_data:/var/lib/grafana
+      - grafana:/var/lib/grafana
 
   prometheus:
     container_name: prometheus
@@ -154,3 +154,4 @@ volumes:
   prometheus:
   minio:
   tempo:
+  grafana:
