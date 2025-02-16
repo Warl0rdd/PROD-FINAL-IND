@@ -1,6 +1,9 @@
 package learning
 
-import "solution/internal/adapters/database/postgres"
+import (
+	"solution/internal/adapters/database/postgres"
+	"solution/internal/domain/utils/ads"
+)
 
 // Подробнее в algorithm.md
 
@@ -16,7 +19,7 @@ func GenNewR0(oldR0 float64, data []postgres.GetImpressionsForLearningRow) float
 		case false:
 			trueClick = 0.0
 		}
-		sum += item.ModelScore - trueClick
+		sum += ads.Logistic(item.Score, oldR0) - trueClick
 	}
 
 	if len(data) == 0 {

@@ -14,10 +14,10 @@ rel - Релевантность (ml_score)
 */
 
 func AdScore(cpi, cpc, rel, r0 float64) float64 {
-	return logistic(rel, r0)*(cpc+cpi) + (1.0-logistic(rel, r0))*cpi
+	return Logistic(rel, r0)*(cpc+cpi) + (1.0-Logistic(rel, r0))*cpi
 }
 
-func logistic(x, r0 float64) float64 {
+func Logistic(x, r0 float64) float64 {
 	// Кф-нт кривизны - чем меньше, тем плавнее будет переход между влиянием цены за показ и цены за клик
 	k := 0.15
 
