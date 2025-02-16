@@ -37,4 +37,7 @@ func Setup(app *app.App) {
 
 	statsHandler := v1.NewStatsHandler(app)
 	statsHandler.Setup(router)
+
+	imageHandler := v1.NewImageHandler(app)
+	imageHandler.Setup(router)
 }

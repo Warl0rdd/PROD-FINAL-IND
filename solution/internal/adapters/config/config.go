@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 	"log"
@@ -15,6 +17,7 @@ import (
 type Config struct {
 	Database *pgxpool.Pool
 	Redis    *redis.Client
+	Minio    *minio.Client
 }
 
 func initConfig() {
@@ -86,8 +89,26 @@ func Configure() *Config {
 	})
 	logger.Log.Info("Redis initialized")
 
+	logger.Log.Info("Initializing minio...")
+	endpoint := os.Getenv("MINIO_HOST")
+	accessKey := os.Getenv("MINIO_ACCESS_KEY")
+	secretKey := os.Getenv("MINIO_SECRET_KEY")
+
+	minioClient, err := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
+		Secure: false,
+	})
+	logger.Log.Info("Minio initialized")
+
+	if err != nil {
+		logger.Log.Panicf("Failed to connect to minio: %v", err)
+		os.Exit(1)
+	}
+	logger.Log.Info("Minio initialized")
+
 	return &Config{
 		Database: database,
 		Redis:    redisClient,
+		Minio:    minioClient,
 	}
 }

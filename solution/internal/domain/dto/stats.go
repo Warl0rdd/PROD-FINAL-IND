@@ -15,5 +15,5 @@ type StatsDTO struct {
 	SpentImpressions float64 `json:"spent_impressions"`
 	SpentClicks      float64 `json:"spent_clicks"`
 	SpentTotal       float64 `json:"spent_total"`
-	Day              int     `json:"day"`
+	Day              int     `json:"day,omitempty"`
 }

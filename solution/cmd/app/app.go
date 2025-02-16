@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 	recoverer "github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/minio/minio-go/v7"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 	"go.opentelemetry.io/otel"
@@ -30,6 +31,7 @@ type App struct {
 	Fiber     *fiber.App
 	DB        *pgxpool.Pool
 	Redis     *redis.Client
+	Minio     *minio.Client
 	Validator *validator.Validator
 }
 
@@ -62,6 +64,7 @@ func New(config *config.Config) *App {
 		Fiber:     fiberApp,
 		DB:        config.Database,
 		Redis:     config.Redis,
+		Minio:     config.Minio,
 		Validator: validator.New(),
 	}
 }
