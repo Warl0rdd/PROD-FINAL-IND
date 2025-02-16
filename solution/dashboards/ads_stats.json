@@ -1,0 +1,801 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 8,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${Database}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "conversion"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Conversion"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "impressions_count"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Impressions Count"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "clicks_count"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Clicks Count"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spent_impressions"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Spent On Impressions"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spent_clicks"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Spent On Clicks"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spent_total"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Total Expenses"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.0-224694",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${Database}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH impr_stats AS (SELECT campaign_id,\r\n                           SUM(cost) AS spent_impressions\r\n                    FROM impressions\r\n                    WHERE campaign_id = ${CampaignID:singlequote} \r\n                    GROUP BY campaign_id),\r\n     click_stats AS (SELECT campaign_id,\r\n                            SUM(cost) AS spent_clicks\r\n                     FROM clicks\r\n                     WHERE campaign_id = ${CampaignID:singlequote}\r\n                     GROUP BY campaign_id)\r\nSELECT c.impressions_count,\r\n       c.clicks_count,\r\n       COALESCE((c.clicks_count::numeric / NULLIF(c.impressions_count, 0)) * 100, 0)     AS conversion,\r\n       COALESCE(impr_stats.spent_impressions, 0)                                         AS spent_impressions,\r\n       COALESCE(click_stats.spent_clicks, 0)                                             AS spent_clicks,\r\n       COALESCE(impr_stats.spent_impressions, 0) + COALESCE(click_stats.spent_clicks, 0) AS spent_total\r\nFROM campaigns c\r\n         LEFT JOIN impr_stats ON c.id = impr_stats.campaign_id\r\n         LEFT JOIN click_stats ON c.id = click_stats.campaign_id\r\nWHERE c.id = ${CampaignID:singlequote};",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Stats By Campaign ID",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${Database}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "conversion"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Conversion"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "impressions_count"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Impressions Count"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "clicks_count"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Clicks Count"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spent_impressions"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Spent On Impressions"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spent_clicks"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Spent On Clicks"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spent_total"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Total Expenses"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.6.0-224694",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${Database}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH impr_stats AS (SELECT c.advertiser_id,\r\n                           COUNT(*)    AS total_impressions,\r\n                           SUM(i.cost) AS spent_impressions\r\n                    FROM impressions i\r\n                             JOIN campaigns c ON i.campaign_id = c.id\r\n                    WHERE c.advertiser_id = ${AdvertiserID:singlequote}\r\n                    GROUP BY c.advertiser_id),\r\n     click_stats AS (SELECT c.advertiser_id,\r\n                            COUNT(*)     AS total_clicks,\r\n                            SUM(c2.cost) AS spent_clicks\r\n                     FROM clicks c2\r\n                              JOIN campaigns c ON c2.campaign_id = c.id\r\n                     WHERE c.advertiser_id = ${AdvertiserID:singlequote}\r\n                     GROUP BY c.advertiser_id)\r\nSELECT COALESCE(impr_stats.total_impressions, 0)                                         AS impressions_count,\r\n       COALESCE(click_stats.total_clicks, 0)                                             AS clicks_count,\r\n       COALESCE(\r\n               (click_stats.total_clicks::numeric / NULLIF(impr_stats.total_impressions, 0)) * 100,\r\n               0\r\n       )                                                                                 AS conversion,\r\n       COALESCE(impr_stats.spent_impressions, 0)                                         AS spent_impressions,\r\n       COALESCE(click_stats.spent_clicks, 0)                                             AS spent_clicks,\r\n       COALESCE(impr_stats.spent_impressions, 0) + COALESCE(click_stats.spent_clicks, 0) AS spent_total\r\nFROM impr_stats\r\n         FULL OUTER JOIN click_stats USING (advertiser_id)",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Stats By Advertiser ID",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${Database}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "impressions_count"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Impressions Count"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "clicks_count"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Clicks Count"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "conversion"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Conversion"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spent_impressions"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Spent On Impressions"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spent_clicks"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Spent On Clicks"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spent_total"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Total Expenses"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "day"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Day"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 22,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "day"
+      },
+      "pluginVersion": "11.6.0-224694",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${Database}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COALESCE(imps.impressions_count, 0)                                  AS impressions_count,\r\n       COALESCE(clks.clicks_count, 0)                                       AS clicks_count,\r\n       COALESCE(\r\n               (clks.clicks_count::numeric / NULLIF(imps.impressions_count, 0)) * 100,\r\n               0\r\n       )                                                                    AS conversion,\r\n       COALESCE(imps.spent_impressions, 0)                                  AS spent_impressions,\r\n       COALESCE(clks.spent_clicks, 0)                                       AS spent_clicks,\r\n       COALESCE(imps.spent_impressions, 0) + COALESCE(clks.spent_clicks, 0) AS spent_total,\r\n       COALESCE(imps.day, clks.day)                                         AS day\r\nFROM campaigns c\r\n         LEFT JOIN (SELECT campaign_id,\r\n                           day,\r\n                           COUNT(*)  AS impressions_count,\r\n                           SUM(cost) AS spent_impressions\r\n                    FROM impressions\r\n                    WHERE campaign_id = ${CampaignID:singlequote}\r\n                    GROUP BY campaign_id, day) imps ON c.id = imps.campaign_id\r\n         LEFT JOIN (SELECT campaign_id,\r\n                           day,\r\n                           COUNT(*)  AS clicks_count,\r\n                           SUM(cost) AS spent_clicks\r\n                    FROM clicks\r\n                    WHERE campaign_id = ${CampaignID:singlequote}\r\n                    GROUP BY campaign_id, day) clks ON c.id = clks.campaign_id\r\nWHERE c.id = ${CampaignID:singlequote}\r\n  AND COALESCE(imps.day, clks.day) IS NOT NULL\r\nORDER BY COALESCE(imps.day, clks.day);",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Daily Stats by CampaignID",
+      "type": "trend"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${Database}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "impressions_count"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Impressions Count"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "clicks_count"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Clicks Count"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "conversion"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Conversion"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spent_impressions"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Spent On Impressions"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spent_clicks"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Spent On Clicks"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spent_total"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Total Expenses"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "day"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Day"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 22,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "day"
+      },
+      "pluginVersion": "11.6.0-224694",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${Database}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COALESCE(SUM(imps.impressions_count), 0)                          AS impressions_count,\r\n       COALESCE(SUM(clks.clicks_count), 0)                               AS clicks_count,\r\n       COALESCE(\r\n               (SUM(clks.clicks_count)::numeric / NULLIF(SUM(imps.impressions_count), 0)) * 100,\r\n               0\r\n       )                                                                 AS conversion,\r\n       COALESCE(SUM(imps.spent_impressions), 0)                          AS spent_impressions,\r\n       COALESCE(SUM(clks.spent_clicks), 0)                               AS spent_clicks,\r\n       COALESCE(SUM(imps.spent_impressions) + SUM(clks.spent_clicks), 0) AS spent_total,\r\n       COALESCE(imps.day, clks.day)                                      AS day\r\nFROM campaigns c\r\n         LEFT JOIN (SELECT campaign_id,\r\n                           day,\r\n                           COUNT(*)  AS impressions_count,\r\n                           SUM(cost) AS spent_impressions\r\n                    FROM impressions\r\n                    GROUP BY campaign_id, day) imps ON c.id = imps.campaign_id\r\n         LEFT JOIN (SELECT campaign_id,\r\n                           day,\r\n                           COUNT(*)  AS clicks_count,\r\n                           SUM(cost) AS spent_clicks\r\n                    FROM clicks\r\n                    GROUP BY campaign_id, day) clks ON c.id = clks.campaign_id\r\nWHERE c.advertiser_id = ${AdvertiserID:singlequote}\r\n  AND COALESCE(imps.day, clks.day) IS NOT NULL\r\nGROUP BY COALESCE(imps.day, clks.day)\r\nORDER BY COALESCE(imps.day, clks.day);",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Daily Stats by AdvertiserID",
+      "type": "trend"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 41,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "79358b6a-27c7-40d1-9544-fca5f67db670",
+          "value": "79358b6a-27c7-40d1-9544-fca5f67db670"
+        },
+        "name": "CampaignID",
+        "options": [
+          {
+            "selected": true,
+            "text": "79358b6a-27c7-40d1-9544-fca5f67db670",
+            "value": "79358b6a-27c7-40d1-9544-fca5f67db670"
+          }
+        ],
+        "query": "79358b6a-27c7-40d1-9544-fca5f67db670",
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "0194fa47-2245-78b4-a755-60e8f8874d74",
+          "value": "0194fa47-2245-78b4-a755-60e8f8874d74"
+        },
+        "name": "AdvertiserID",
+        "options": [
+          {
+            "selected": true,
+            "text": "0194fa47-2245-78b4-a755-60e8f8874d74",
+            "value": "0194fa47-2245-78b4-a755-60e8f8874d74"
+          }
+        ],
+        "query": "0194fa47-2245-78b4-a755-60e8f8874d74",
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "grafana-postgresql-datasource",
+          "value": "bed295ni1yd4wf"
+        },
+        "description": "",
+        "name": "Database",
+        "options": [],
+        "query": "grafana-postgresql-datasource",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": {
+    "from": "2025-02-16T01:26:12.394Z",
+    "to": "2025-02-16T13:26:12.394Z"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Ads Statistics",
+  "uid": "bed8cgti31lvkc",
+  "version": 2,
+  "weekStart": ""
+}
