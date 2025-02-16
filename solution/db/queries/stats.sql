@@ -64,8 +64,8 @@ FROM campaigns c
                            COUNT(*)  AS impressions_count,
                            SUM(cost) AS spent_impressions
                     FROM impressions
-                    WHERE campaign_id = $1
-                    GROUP BY campaign_id, day) imps ON c.id = imps.campaign_id
+                    WHERE impressions.campaign_id = $1
+                    GROUP BY impressions.campaign_id, day) imps ON c.id = imps.campaign_id
          LEFT JOIN (SELECT campaign_id,
                            day,
                            COUNT(*)  AS clicks_count,

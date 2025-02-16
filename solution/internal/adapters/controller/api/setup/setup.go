@@ -40,4 +40,7 @@ func Setup(app *app.App) {
 
 	imageHandler := v1.NewImageHandler(app)
 	imageHandler.Setup(router)
+
+	moderationHandler := v1.NewModerationHandler(app)
+	moderationHandler.Setup(router)
 }
