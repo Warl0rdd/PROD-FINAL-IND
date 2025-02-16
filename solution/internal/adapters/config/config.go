@@ -8,6 +8,7 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/redis/go-redis/v9"
+	"github.com/sheeiavellie/go-yandexgpt"
 	"github.com/spf13/viper"
 	"log"
 	"os"
@@ -18,6 +19,7 @@ type Config struct {
 	Database *pgxpool.Pool
 	Redis    *redis.Client
 	Minio    *minio.Client
+	GPT      *yandexgpt.YandexGPTClient
 }
 
 func initConfig() {
@@ -106,9 +108,16 @@ func Configure() *Config {
 	}
 	logger.Log.Info("Minio initialized")
 
+	logger.Log.Info("Initializing yandexGPT client...")
+
+	client := yandexgpt.NewYandexGPTClientWithAPIKey(os.Getenv("YANDEX_GPT_API_KEY"))
+
+	logger.Log.Info("YandexGPT client initialized")
+
 	return &Config{
 		Database: database,
 		Redis:    redisClient,
 		Minio:    minioClient,
+		GPT:      client,
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/minio/minio-go/v7"
 	"github.com/redis/go-redis/v9"
+	"github.com/sheeiavellie/go-yandexgpt"
 	"github.com/spf13/viper"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -33,6 +34,7 @@ type App struct {
 	Redis     *redis.Client
 	Minio     *minio.Client
 	Validator *validator.Validator
+	GPT       *yandexgpt.YandexGPTClient
 }
 
 // New is a function that creates a new app struct
@@ -66,6 +68,7 @@ func New(config *config.Config) *App {
 		Redis:     config.Redis,
 		Minio:     config.Minio,
 		Validator: validator.New(),
+		GPT:       config.GPT,
 	}
 }
 

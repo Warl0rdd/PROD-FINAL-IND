@@ -43,4 +43,7 @@ func Setup(app *app.App) {
 
 	moderationHandler := v1.NewModerationHandler(app)
 	moderationHandler.Setup(router)
+
+	llmHandler := v1.NewLLMHandler(app)
+	llmHandler.Setup(router)
 }
