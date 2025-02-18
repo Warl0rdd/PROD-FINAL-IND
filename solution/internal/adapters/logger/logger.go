@@ -9,7 +9,6 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"os"
 	"time"
 )
 
@@ -25,26 +24,8 @@ type logger struct {
 // New is a function to initialize logger
 /*
  * debug bool - is debug mode
- * timeZone string - logger time zone, by default "GMT"
  */
-func New(debug bool, timeZone string) {
-	encoderConfig := zapcore.EncoderConfig{
-		MessageKey:     "message",
-		LevelKey:       "level",
-		TimeKey:        "timestamp",
-		CallerKey:      "caller",
-		EncodeLevel:    zapcore.CapitalColorLevelEncoder, // Цветная подсветка уровней
-		EncodeTime:     customTimeEncoder,                // Кастомный формат времени
-		EncodeCaller:   zapcore.ShortCallerEncoder,       // Краткий формат caller
-		EncodeDuration: zapcore.StringDurationEncoder,
-	}
-
-	if timeZone != "" {
-		encoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-			enc.AppendString(t.In(time.FixedZone(timeZone, 3*60*60)).Format("2006-01-02 15:04:05"))
-		}
-	}
-
+func New(debug bool) {
 	var level zapcore.Level
 	if debug {
 		level = zapcore.DebugLevel
@@ -58,10 +39,9 @@ func New(debug bool, timeZone string) {
 		panic(err)
 	}
 
-	core := zapcore.NewTee(
-		zapcore.NewCore(zapcore.NewJSONEncoder(encoderConfig), zapcore.AddSync(os.Stdout), level),
-		otelzap.NewCore("internal/adapters/logger", otelzap.WithLoggerProvider(provider)),
-	)
+	core := otelzap.NewCore("internal/adapters/logger", otelzap.WithLoggerProvider(provider))
+
+	core.Enabled(level)
 
 	log := zap.New(core, zap.AddCaller())
 

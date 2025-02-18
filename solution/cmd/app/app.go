@@ -16,6 +16,7 @@ import (
 	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
+	tele "gopkg.in/telebot.v3"
 	"os"
 	"os/signal"
 	"solution/internal/adapters/config"
@@ -35,6 +36,7 @@ type App struct {
 	Minio     *minio.Client
 	Validator *validator.Validator
 	GPT       *yandexgpt.YandexGPTClient
+	Telegram  *tele.Bot
 }
 
 // New is a function that creates a new app struct
@@ -69,6 +71,7 @@ func New(config *config.Config) *App {
 		Minio:     config.Minio,
 		Validator: validator.New(),
 		GPT:       config.GPT,
+		Telegram:  config.Telegram,
 	}
 }
 

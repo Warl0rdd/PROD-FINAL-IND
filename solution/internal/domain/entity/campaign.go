@@ -69,4 +69,5 @@ type Campaign struct {
 	AgeFrom           pgtype.Int4
 	AgeTo             pgtype.Int4
 	Location          pgtype.Text
+	Approved          bool
 }

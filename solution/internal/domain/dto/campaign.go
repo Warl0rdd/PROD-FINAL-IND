@@ -11,6 +11,7 @@ type CampaignDTO struct {
 	AdText            string  `json:"ad_text" validate:"required"`
 	StartDate         int32   `json:"start_date" validate:"required"`
 	EndDate           int32   `json:"end_date" validate:"required"`
+	Approved          bool    `json:"approved" validate:"required"`
 	Targeting         Target  `json:"targeting"`
 }
 

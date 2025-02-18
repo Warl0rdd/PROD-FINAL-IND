@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.opentelemetry.io/otel"
@@ -90,10 +89,7 @@ func (s *campaignStorage) DeleteCampaign(ctx context.Context, arg DeleteCampaign
 	ctx, span := tracer.Start(ctx, "campaign-service")
 	defer span.End()
 
-	ct, err := s.db.Exec(ctx, deleteCampaign, arg.ID, arg.AdvertiserID)
-	if ct.RowsAffected() == 0 {
-		return pgx.ErrNoRows
-	}
+	_, err := s.db.Exec(ctx, deleteCampaign, arg.ID, arg.AdvertiserID)
 	return err
 }
 
@@ -111,7 +107,8 @@ SELECT c.id,
        c.gender,
        c.age_from,
        c.age_to,
-       c.location
+       c.location,
+	   c.approved
 FROM campaigns c
 WHERE c.advertiser_id = $1
   AND c.id = $2
@@ -144,6 +141,7 @@ func (s *campaignStorage) GetCampaignById(ctx context.Context, arg GetCampaignBy
 		&i.AgeFrom,
 		&i.AgeTo,
 		&i.Location,
+		&i.Approved,
 	)
 	return i, err
 }
@@ -162,7 +160,8 @@ SELECT c.id,
        c.gender,
        c.age_from,
        c.age_to,
-       c.location
+       c.location,
+	   c.approved
 FROM campaigns c
 WHERE c.advertiser_id = $1
 LIMIT $2 OFFSET $3
@@ -202,6 +201,7 @@ func (s *campaignStorage) GetCampaignWithPagination(ctx context.Context, arg Get
 			&i.AgeFrom,
 			&i.AgeTo,
 			&i.Location,
+			&i.Approved,
 		); err != nil {
 			return nil, err
 		}
@@ -221,7 +221,7 @@ SET cost_per_impression = CASE WHEN $3::float != 0 THEN $3 ELSE cost_per_impress
     cost_per_click      = CASE WHEN $4::float != 0 THEN $4 ELSE cost_per_click END,
     ad_title            = CASE WHEN $5::text != '' THEN $5 ELSE ad_title END,
     ad_text             = CASE WHEN $6::text != '' THEN $6 ELSE ad_text END,
-    gender              = CASE WHEN $7::campaign_gender != 'ALL' THEN $7 ELSE gender END,
+    gender              = CASE WHEN $7::campaign_gender != 'ALL' THEN $7 ELSE 'ALL' END,
     age_from            = CASE WHEN $8::int != 0 THEN $8 ELSE age_from END,
     age_to              = CASE WHEN $9::int != 0 THEN $9 ELSE age_to END,
     location            = CASE WHEN $10::text != '' THEN $10 ELSE location END,
@@ -229,7 +229,7 @@ SET cost_per_impression = CASE WHEN $3::float != 0 THEN $3 ELSE cost_per_impress
     clicks_limit        = CASE WHEN $12::int != 0 THEN $12 ELSE clicks_limit END
 WHERE id = $1
   AND advertiser_id = $2
-RETURNING id, advertiser_id, impression_limit, clicks_limit, cost_per_impression, cost_per_click, ad_title, ad_text, start_date, end_date, gender, age_from, age_to, location, impressions_count, clicks_count
+RETURNING id, advertiser_id, impression_limit, clicks_limit, cost_per_impression, cost_per_click, ad_title, ad_text, start_date, end_date, gender, age_from, age_to, location, approved
 `
 
 type UpdateCampaignParams struct {
@@ -282,6 +282,7 @@ func (s *campaignStorage) UpdateCampaign(ctx context.Context, arg UpdateCampaign
 		&i.AgeFrom,
 		&i.AgeTo,
 		&i.Location,
+		&i.Approved,
 	)
 	return i, err
 }

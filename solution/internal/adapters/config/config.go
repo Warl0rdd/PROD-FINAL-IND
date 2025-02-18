@@ -13,6 +13,9 @@ import (
 	"log"
 	"os"
 	"solution/internal/adapters/logger"
+	"time"
+
+	tele "gopkg.in/telebot.v3"
 )
 
 type Config struct {
@@ -20,6 +23,7 @@ type Config struct {
 	Redis    *redis.Client
 	Minio    *minio.Client
 	GPT      *yandexgpt.YandexGPTClient
+	Telegram *tele.Bot
 }
 
 func initConfig() {
@@ -37,7 +41,6 @@ func Configure() *Config {
 
 	logger.New(
 		viper.GetBool("settings.debug"),
-		viper.GetString("settings.timezone"),
 	)
 	logger.Log.Debugf("Debug mode: %t", viper.GetBool("settings.debug"))
 
@@ -114,10 +117,26 @@ func Configure() *Config {
 
 	logger.Log.Info("YandexGPT client initialized")
 
+	logger.Log.Info("Initializing telegram bot...")
+
+	pref := tele.Settings{
+		Token:  os.Getenv("TG_BOT_TOKEN"),
+		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
+	}
+
+	bot, err := tele.NewBot(pref)
+	if err != nil {
+		logger.Log.Panicf("Failed to connect to telegram: %v", err)
+		os.Exit(1)
+	}
+
+	logger.Log.Info("Telegram bot initialized")
+
 	return &Config{
 		Database: database,
 		Redis:    redisClient,
 		Minio:    minioClient,
 		GPT:      client,
+		Telegram: bot,
 	}
 }

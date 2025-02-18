@@ -119,6 +119,7 @@ func (s *CampaignService) GetCampaignById(ctx context.Context, campaignDTO dto.G
 			Location: campaign.Location.String,
 			Gender:   string(campaign.Gender),
 		},
+		Approved: campaign.Approved,
 	}, nil
 }
 
@@ -154,6 +155,7 @@ func (s *CampaignService) GetCampaignWithPagination(ctx context.Context, campaig
 				Location: campaign.Location.String,
 				Gender:   string(campaign.Gender),
 			},
+			Approved: campaign.Approved,
 		})
 	}
 	return result, nil
@@ -230,6 +232,7 @@ func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.Up
 			Location: updatedCampaign.Location.String,
 			Gender:   string(updatedCampaign.Gender),
 		},
+		Approved: updatedCampaign.Approved,
 	}, nil
 }
 

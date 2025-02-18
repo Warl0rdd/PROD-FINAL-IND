@@ -435,7 +435,7 @@ paths:
       tags:
         - Time
       summary: Установка текущей даты
-      description: Устанавливает текущий день с указанным UUID
+      description: Устанавливает текущий день в системе в заданную дату.
       operationId: advanceDay
       requestBody:
         content:
@@ -626,6 +626,12 @@ components:
       type: object
       description: Объект для обновления параметров кампании, которые разрешено изменять до старта кампании.
       properties:
+        impressions_limit:
+          type: integer
+          description: Задаёт лимит показов для рекламного объявления.
+        clicks_limit:
+          type: integer
+          description: Задаёт лимит переходов для рекламного объявления.
         cost_per_impression:
           type: number
           format: float
@@ -640,6 +646,14 @@ components:
         ad_text:
           type: string
           description: Новый текст рекламного объявления.
+        start_date:
+          type: integer
+          format: int32
+          description: День начала показа рекламного объявления (включительно).
+        end_date:
+          type: integer
+          format: int32
+          description: День окончания показа рекламного объявления (включительно).
         targeting:
           $ref: '#/components/schemas/Targeting'
           description: Новые параметры таргетирования для рекламной кампании.

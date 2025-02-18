@@ -1,7 +1,7 @@
 package dto
 
 type GetCampaignsForModerationDTO struct {
-	Offset int `query:"offset" validate:"required"`
+	Offset int `query:"offset" validate:"omitempty,min=0"`
 	Limit  int `query:"limit" validate:"required"`
 }
 

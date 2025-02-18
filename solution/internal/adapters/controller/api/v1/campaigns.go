@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"github.com/gofiber/fiber/v3"
-	"github.com/jackc/pgx/v5"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"solution/cmd/app"
@@ -288,6 +287,17 @@ func (h *CampaignHandler) DeleteCampaign(c fiber.Ctx) error {
 		})
 	}
 
+	if campaign, err := h.campaignService.GetCampaignById(ctx, dto.GetCampaignByIDDTO{
+		CampaignID:   campaignDTO.CampaignID,
+		AdvertiserID: campaignDTO.AdvertiserID,
+	}); err != nil || campaign == (dto.CampaignDTO{}) {
+		span.RecordError(err)
+		return c.Status(fiber.StatusNotFound).JSON(dto.HTTPError{
+			Code:    fiber.StatusNotFound,
+			Message: "Campaign not found",
+		})
+	}
+
 	span.SetAttributes(
 		attribute.String("advertiserId", campaignDTO.AdvertiserID),
 		attribute.String("endpoint", "/advertisers/{advertiserId}/campaigns/{campaignId}"),
@@ -296,12 +306,6 @@ func (h *CampaignHandler) DeleteCampaign(c fiber.Ctx) error {
 	err := h.campaignService.DeleteCampaign(ctx, campaignDTO)
 	if err != nil {
 		span.RecordError(err)
-		if errors.Is(err, pgx.ErrNoRows) {
-			return c.Status(fiber.StatusNotFound).JSON(dto.HTTPError{
-				Code:    fiber.StatusNotFound,
-				Message: "Campaign not found",
-			})
-		}
 
 		return c.Status(fiber.StatusInternalServerError).JSON(dto.HTTPError{
 			Code:    fiber.StatusInternalServerError,
