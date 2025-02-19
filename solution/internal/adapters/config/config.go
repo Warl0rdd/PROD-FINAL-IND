@@ -36,26 +36,32 @@ func initConfig() {
 	}
 }
 
-func Configure() *Config {
-	initConfig()
+func Configure(ignoreConfig bool) *Config {
+	if !ignoreConfig {
+		initConfig()
+	}
 
-	logger.New(
-		viper.GetBool("settings.debug"),
-	)
+	var debug bool
+
+	if !ignoreConfig {
+		debug = viper.GetBool("settings.debug")
+	} else {
+		debug = true
+	}
+
+	logger.New(debug)
 	logger.Log.Debugf("Debug mode: %t", viper.GetBool("settings.debug"))
 
 	// Initialize database
 	logger.Log.Info("Initializing database...")
 
 	logger.Log.Debug("Configuring postgres connection string")
-	dsn := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=%s TimeZone=%s",
+	dsn := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
 		os.Getenv("POSTGRES_USER"),
 		os.Getenv("POSTGRES_PASSWORD"),
 		os.Getenv("POSTGRES_DB"),
 		os.Getenv("POSTGRES_HOST"),
 		os.Getenv("POSTGRES_PORT"),
-		viper.GetString("service.database.ssl-mode"),
-		viper.GetString("settings.timezone"),
 	)
 
 	logger.Log.Debug("Configuring database")

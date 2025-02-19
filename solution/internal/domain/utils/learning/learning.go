@@ -8,7 +8,7 @@ import (
 // Подробнее в algorithm.md
 
 func GenNewR0(oldR0 float64, data []postgres.GetImpressionsForLearningRow) float64 {
-	n := 0.05
+	n := 0.01
 
 	var sum float64
 	for _, item := range data {
@@ -25,7 +25,7 @@ func GenNewR0(oldR0 float64, data []postgres.GetImpressionsForLearningRow) float
 	if len(data) == 0 {
 		return oldR0
 	} else {
-		sum *= 0.15 / float64(len(data))
+		sum *= -10 / float64(len(data))
 	}
 
 	return oldR0 - n*sum

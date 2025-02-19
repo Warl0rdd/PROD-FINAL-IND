@@ -138,7 +138,7 @@ services:
              mc policy set public myminio/loki"
 
   backend:
-    build: .env
+    build: .
     container_name: backend
     restart: unless-stopped
     env_file:

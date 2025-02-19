@@ -8,14 +8,8 @@ import (
 	botSetup "solution/internal/adapters/tg-bot/setup"
 )
 
-// @title           Опциональные требования
-// @version         1.0
-// @description     Описание работы всех API эндпоинтов из опциональных требований
-
-// @host      localhost:8080
-// @BasePath  /
 func main() {
-	appConfig := config.Configure()
+	appConfig := config.Configure(false)
 	mainApp := app.New(appConfig)
 
 	defer mainApp.DB.Close()

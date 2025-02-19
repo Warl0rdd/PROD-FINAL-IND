@@ -42,7 +42,7 @@ func (s *yandexGPTStorage) GenerateCampaignText(ctx context.Context, campaignTit
 			},
 			{
 				Role: yandexgpt.YandexGPTMessageRoleUser,
-				Text: fmt.Sprintf("title: %s\n advertiser_name: %s", campaignTitle),
+				Text: fmt.Sprintf("title: %s\n advertiser_name: %s", campaignTitle, advertiserName),
 			},
 		},
 	}
