@@ -13,28 +13,6 @@
 
 
 
-<details>
-  <summary>Содержание</summary>
-  <ol>
-    <li>
-      <a>[О проекте](#about_the_project)</a>
-      <ul>
-        <li><a>[Использованные технологии](#built_with)</a></li>
-      </ul>
-    </li>
-    <li>
-      <a>[Начало работы](#getting_started)</a>
-      <ul>
-        <li><a>[Требования](#prerequisites)</a></li>
-        <li><a>[Установка и запуск](#installation)</a></li>
-      </ul>
-    </li>
-    <li><a>[Смотрите также](#see_also)</a></li>
-  </ol>
-</details>
-
-
-
 <a id="about_the_project"></a>
 ## О проекте
 
