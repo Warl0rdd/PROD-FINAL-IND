@@ -74,6 +74,12 @@ docker compose up
 ```
 Вуа-ля!
 
+Юнит тесты:
+
+```shell
+go test -v ./...
+```
+
 <a id="see_also"></a>
 ## Смотрите также
 
