@@ -15,6 +15,7 @@ import (
 type campaignStorage interface {
 	CreateCampaign(ctx context.Context, arg postgres.CreateCampaignParams) (postgres.CreateCampaignRow, error)
 	GetCampaignById(ctx context.Context, arg postgres.GetCampaignByIdParams) (entity.Campaign, error)
+	GetCampaignByIdInsecure(ctx context.Context, campaignId uuid.UUID) (entity.Campaign, error)
 	GetCampaignWithPagination(ctx context.Context, arg postgres.GetCampaignWithPaginationParams) ([]entity.Campaign, error)
 	UpdateCampaign(ctx context.Context, arg postgres.UpdateCampaignParams) (entity.Campaign, error)
 	DeleteCampaign(ctx context.Context, arg postgres.DeleteCampaignParams) error
@@ -159,6 +160,37 @@ func (s *CampaignService) GetCampaignWithPagination(ctx context.Context, campaig
 		})
 	}
 	return result, nil
+}
+
+func (s *CampaignService) GetCampaignByIdInsecure(ctx context.Context, campaignId string) (dto.CampaignDTO, error) {
+	tracer := otel.Tracer("campaign-service")
+	ctx, span := tracer.Start(ctx, "campaign-service")
+	defer span.End()
+
+	campaign, err := s.campaignStorage.GetCampaignByIdInsecure(ctx, uuid.MustParse(campaignId))
+	if err != nil {
+		return dto.CampaignDTO{}, err
+	}
+
+	return dto.CampaignDTO{
+		CampaignID:        campaign.ID.String(),
+		AdvertiserID:      campaign.AdvertiserID.String(),
+		ImpressionsLimit:  campaign.ImpressionLimit,
+		ClicksLimit:       campaign.ClicksLimit,
+		CostPerImpression: campaign.CostPerImpression,
+		CostPerClick:      campaign.CostPerClick,
+		AdTitle:           campaign.AdTitle,
+		AdText:            campaign.AdText,
+		StartDate:         campaign.StartDate,
+		EndDate:           campaign.EndDate,
+		Targeting: dto.Target{
+			AgeFrom:  campaign.AgeFrom.Int32,
+			AgeTo:    campaign.AgeTo.Int32,
+			Location: campaign.Location.String,
+			Gender:   string(campaign.Gender),
+		},
+		Approved: campaign.Approved,
+	}, nil
 }
 
 func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.UpdateCampaignDTO) (dto.CampaignDTO, error) {

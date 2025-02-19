@@ -23,6 +23,8 @@ func NewImageStorage(client *minio.Client, bucket string) *imageStorage {
 	}
 }
 
+// TODO добавить поддержку jpg/jpeg
+
 func (s *imageStorage) UploadImage(ctx context.Context, image *multipart.File, campaignId uuid.UUID, size int64) error {
 	tracer := otel.Tracer("image-storage")
 	ctx, span := tracer.Start(ctx, "image-storage")

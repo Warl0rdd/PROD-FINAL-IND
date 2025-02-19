@@ -146,6 +146,53 @@ func (s *campaignStorage) GetCampaignById(ctx context.Context, arg GetCampaignBy
 	return i, err
 }
 
+const getCampaignByIdInsecure = `-- name: GetCampaignById :one
+SELECT c.id,
+       c.advertiser_id,
+       c.impression_limit,
+       c.clicks_limit,
+       c.cost_per_impression,
+       c.cost_per_click,
+       c.ad_title,
+       c.ad_text,
+       c.start_date,
+       c.end_date,
+       c.gender,
+       c.age_from,
+       c.age_to,
+       c.location,
+	   c.approved
+FROM campaigns c
+WHERE c.id = $1
+`
+
+func (s *campaignStorage) GetCampaignByIdInsecure(ctx context.Context, campaignId uuid.UUID) (entity.Campaign, error) {
+	tracer := otel.Tracer("campaign-service")
+	ctx, span := tracer.Start(ctx, "campaign-service")
+	defer span.End()
+
+	row := s.db.QueryRow(ctx, getCampaignByIdInsecure, campaignId)
+	var i entity.Campaign
+	err := row.Scan(
+		&i.ID,
+		&i.AdvertiserID,
+		&i.ImpressionLimit,
+		&i.ClicksLimit,
+		&i.CostPerImpression,
+		&i.CostPerClick,
+		&i.AdTitle,
+		&i.AdText,
+		&i.StartDate,
+		&i.EndDate,
+		&i.Gender,
+		&i.AgeFrom,
+		&i.AgeTo,
+		&i.Location,
+		&i.Approved,
+	)
+	return i, err
+}
+
 const getCampaignWithPagination = `-- name: GetCampaignWithPagination :many
 SELECT c.id,
        c.advertiser_id,

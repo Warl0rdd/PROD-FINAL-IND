@@ -19,6 +19,7 @@ import (
 type CampaignService interface {
 	CreateCampaign(ctx context.Context, campaignDTO dto.CreateCampaignDTO) (dto.CampaignDTO, error)
 	GetCampaignById(ctx context.Context, campaignDTO dto.GetCampaignByIDDTO) (dto.CampaignDTO, error)
+	GetCampaignByIdInsecure(ctx context.Context, campaignId string) (dto.CampaignDTO, error)
 	GetCampaignWithPagination(ctx context.Context, campaignDTO dto.GetCampaignsWithPaginationDTO) ([]dto.CampaignDTO, error)
 	UpdateCampaign(ctx context.Context, campaignDTO dto.UpdateCampaignDTO) (dto.CampaignDTO, error)
 	DeleteCampaign(ctx context.Context, campaignDTO dto.DeleteCampaignDTO) error

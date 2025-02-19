@@ -8,6 +8,7 @@ import (
 	"solution/cmd/app"
 	"solution/internal/adapters/controller/api/validator"
 	"solution/internal/adapters/database/postgres"
+	"solution/internal/adapters/database/redis"
 	"solution/internal/domain/dto"
 	"solution/internal/domain/service"
 )
@@ -20,12 +21,14 @@ type ModerationService interface {
 
 type ModerationHandler struct {
 	ModerationService ModerationService
+	CampaignService   CampaignService
 	validator         *validator.Validator
 }
 
 func NewModerationHandler(app *app.App) *ModerationHandler {
 	return &ModerationHandler{
 		ModerationService: service.NewModerationService(postgres.NewModerationStorage(app.DB)),
+		CampaignService:   service.NewCampaignService(postgres.NewCampaignStorage(app.DB), redis.NewDayStorage(app.Redis)),
 		validator:         app.Validator,
 	}
 }
@@ -85,6 +88,16 @@ func (h *ModerationHandler) Approve(c fiber.Ctx) error {
 		})
 	}
 
+	campaign, err := h.CampaignService.GetCampaignByIdInsecure(ctx, approveDTO.CampaignID)
+
+	if err != nil || campaign == (dto.CampaignDTO{}) {
+		span.RecordError(err)
+		return c.Status(fiber.StatusNotFound).JSON(dto.HTTPError{
+			Code:    fiber.StatusNotFound,
+			Message: err.Error(),
+		})
+	}
+
 	if err := h.ModerationService.Approve(ctx, approveDTO.CampaignID); err != nil {
 		span.RecordError(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(dto.HTTPError{
@@ -107,6 +120,16 @@ func (h *ModerationHandler) Reject(c fiber.Ctx) error {
 		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	campaign, err := h.CampaignService.GetCampaignByIdInsecure(ctx, rejectDTO.CampaignID)
+
+	if err != nil || campaign == (dto.CampaignDTO{}) {
+		span.RecordError(err)
+		return c.Status(fiber.StatusNotFound).JSON(dto.HTTPError{
+			Code:    fiber.StatusNotFound,
 			Message: err.Error(),
 		})
 	}
