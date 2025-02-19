@@ -6,7 +6,6 @@ import (
 	"solution/internal/adapters/controller/api/setup"
 	_ "solution/internal/adapters/controller/api/v1"
 	botSetup "solution/internal/adapters/tg-bot/setup"
-	_ "solution/openapi"
 )
 
 // @title           Опциональные требования
