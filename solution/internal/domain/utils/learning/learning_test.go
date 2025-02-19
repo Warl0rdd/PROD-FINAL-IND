@@ -64,3 +64,70 @@ func TestGenNewR0(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkGenNewR0(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		GenNewR0(0.5, []postgres.GetImpressionsForLearningRow{
+			{
+				Score:        0.639,
+				ClickedAfter: true,
+			},
+			{
+				Score:        0.638,
+				ClickedAfter: false,
+			},
+			{
+				Score:        0.7,
+				ClickedAfter: true,
+			},
+			{
+				Score:        0.1,
+				ClickedAfter: false,
+			},
+			{
+				Score:        0.2,
+				ClickedAfter: true,
+			},
+			{
+				Score:        0.87,
+				ClickedAfter: false,
+			},
+			{
+				Score:        0.5,
+				ClickedAfter: true,
+			},
+			{
+				Score:        0.9,
+				ClickedAfter: false,
+			},
+			{
+				Score:        0.33,
+				ClickedAfter: true,
+			},
+			{
+				Score:        0.1,
+				ClickedAfter: false,
+			},
+			{
+				Score:        0.123,
+				ClickedAfter: true,
+			},
+			{
+				Score:        0.543,
+				ClickedAfter: false,
+			},
+			{
+				Score:        0.123123,
+				ClickedAfter: true,
+			},
+			{
+				Score:        0.76,
+				ClickedAfter: false,
+			},
+			{
+				Score:        0.642,
+				ClickedAfter: true,
+			},
+		})
+	}
+}
