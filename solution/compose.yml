@@ -149,6 +149,17 @@ services:
       database:
         condition: service_healthy
 
+  migrations:
+    build:
+      context: .
+      dockerfile: dockerfiles/goose.Dockerfile
+    container_name: migrations
+    depends_on:
+      database:
+        condition: service_healthy
+    env_file:
+      - goose.env
+
 volumes:
   database:
   redis:

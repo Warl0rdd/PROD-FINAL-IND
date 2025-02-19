@@ -30,6 +30,7 @@
 * ![Grafana](https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white)
 * ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 * ![YAML](https://img.shields.io/badge/yaml-%23ffffff.svg?style=for-the-badge&logo=yaml&logoColor=151515)
+* ![Amazon S3](https://img.shields.io/badge/Amazon%20S3-FF9900?style=for-the-badge&logo=amazons3&logoColor=white)
 
 
 
@@ -79,3 +80,4 @@ docker compose up
 Вся документация расписана в .md файлах, находящихся в папке solution/doc
 
 * [Схема базы данных](doc/db.md)
+* [Обоснование использованных технологий](doc/proof.md)

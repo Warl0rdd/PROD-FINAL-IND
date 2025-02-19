@@ -33,7 +33,5 @@ EXPOSE 3000
 # Add required static files.
 #COPY assets assets
 
-# TODO add goose
-
 # Run the application.
 CMD ["./application"]
