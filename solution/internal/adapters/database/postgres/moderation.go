@@ -12,6 +12,8 @@ type moderationStorage struct {
 	db *pgxpool.Pool
 }
 
+// TODO turn moderation on and off
+
 func NewModerationStorage(db *pgxpool.Pool) *moderationStorage {
 	return &moderationStorage{
 		db: db,
