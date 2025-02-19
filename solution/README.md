@@ -81,3 +81,4 @@ docker compose up
 
 * [Схема базы данных](doc/db.md)
 * [Обоснование использованных технологий](doc/proof.md)
+* [Описание docker compose файла](doc/compose.md)
