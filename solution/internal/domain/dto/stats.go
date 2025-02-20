@@ -1,11 +1,11 @@
 package dto
 
 type GetStatsByCampaignIDDTO struct {
-	CampaignID string `params:"campaignId"`
+	CampaignID string `params:"campaignId" validate:"required,uuid"`
 }
 
 type GetStatsByAdvertiserIDDTO struct {
-	AdvertiserID string `params:"advertiserId"`
+	AdvertiserID string `params:"advertiserId" validate:"required,uuid"`
 }
 
 type StatsDTO struct {

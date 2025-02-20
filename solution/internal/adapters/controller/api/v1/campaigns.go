@@ -75,6 +75,14 @@ func (h *CampaignHandler) CreateCampaign(c fiber.Ctx) error {
 		})
 	}
 
+	if campaignDTO.StartDate > campaignDTO.EndDate {
+		span.RecordError(errorz.BadRequest)
+		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
+			Code:    fiber.StatusBadRequest,
+			Message: "start date must be less than end date",
+		})
+	}
+
 	span.SetAttributes(
 		attribute.String("advertiserId", campaignDTO.AdvertiserID),
 		attribute.String("endpoint", "/advertisers/{advertiserId}/campaigns"),

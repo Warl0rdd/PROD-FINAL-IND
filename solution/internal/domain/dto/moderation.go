@@ -2,7 +2,7 @@ package dto
 
 type GetCampaignsForModerationDTO struct {
 	Offset int `query:"offset" validate:"omitempty,min=0"`
-	Limit  int `query:"limit" validate:"required"`
+	Limit  int `query:"limit" validate:"omitempty,min=1"`
 }
 
 type CampaignForModerationDTO struct {
@@ -13,9 +13,9 @@ type CampaignForModerationDTO struct {
 }
 
 type ApproveCampaignDTO struct {
-	CampaignID string `params:"campaignId" validate:"required"`
+	CampaignID string `params:"campaignId" validate:"required,uuid"`
 }
 
 type RejectCampaignDTO struct {
-	CampaignID string `params:"campaignId" validate:"required"`
+	CampaignID string `params:"campaignId" validate:"required,uuid"`
 }

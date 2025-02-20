@@ -1,7 +1,7 @@
 package dto
 
 type GetAdsDTO struct {
-	ClientID string `query:"client_id" validate:"required"`
+	ClientID string `query:"client_id" validate:"required,uuid"`
 }
 
 type AdDTO struct {
@@ -12,6 +12,6 @@ type AdDTO struct {
 }
 
 type AddClickDTO struct {
-	ClientID string `json:"client_id" validate:"required"`
-	AdID     string `params:"adId" validate:"required"`
+	ClientID string `json:"client_id" validate:"required,uuid"`
+	AdID     string `params:"adId" validate:"required,uuid"`
 }

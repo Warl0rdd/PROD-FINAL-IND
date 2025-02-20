@@ -17,39 +17,39 @@ type CampaignDTO struct {
 
 type Target struct {
 	Gender   string `json:"gender"`
-	AgeFrom  int32  `json:"age_from"`
-	AgeTo    int32  `json:"age_to"`
-	Location string `json:"location"`
+	AgeFrom  int32  `json:"age_from" validate:"omitempty,min=0,max=200"`
+	AgeTo    int32  `json:"age_to" validate:"omitempty,min=0,max=200"`
+	Location string `json:"location" validate:"omitempty,max=255"`
 }
 
 type CreateCampaignDTO struct {
-	AdvertiserID      string  `params:"advertiserId" validate:"required"`
-	ImpressionsLimit  int32   `json:"impressions_limit" validate:"required"`
-	ClicksLimit       int32   `json:"clicks_limit" validate:"required"`
-	CostPerImpression float64 `json:"cost_per_impression" validate:"required"`
-	CostPerClick      float64 `json:"cost_per_click" validate:"required"`
-	AdTitle           string  `json:"ad_title" validate:"required"`
-	AdText            string  `json:"ad_text" validate:"required"`
-	StartDate         int32   `json:"start_date" validate:"required"`
-	EndDate           int32   `json:"end_date" validate:"required"`
+	AdvertiserID      string  `params:"advertiserId" validate:"required,uuid"`
+	ImpressionsLimit  int32   `json:"impressions_limit" validate:"required,min=0"`
+	ClicksLimit       int32   `json:"clicks_limit" validate:"required,min=0"`
+	CostPerImpression float64 `json:"cost_per_impression" validate:"required,min=0"`
+	CostPerClick      float64 `json:"cost_per_click" validate:"required,min=0"`
+	AdTitle           string  `json:"ad_title" validate:"required,max=100"`
+	AdText            string  `json:"ad_text" validate:"required,max=10000"`
+	StartDate         int32   `json:"start_date" validate:"required,min=1"`
+	EndDate           int32   `json:"end_date" validate:"required,min=1"`
 	Targeting         Target  `json:"targeting"`
 }
 
 type GetCampaignByIDDTO struct {
-	CampaignID   string `params:"campaignId"`
-	AdvertiserID string `params:"advertiserId"`
+	CampaignID   string `params:"campaignId" validate:"required,uuid"`
+	AdvertiserID string `params:"advertiserId" validate:"required,uuid"`
 }
 
 type GetCampaignsWithPaginationDTO struct {
-	AdvertiserID string `params:"advertiserId"`
-	Limit        int32  `query:"size"`
-	Page         int32  `query:"page"`
+	AdvertiserID string `params:"advertiserId" validate:"required,uuid"`
+	Limit        int32  `query:"size" validate:"omitempty,min=1"`
+	Page         int32  `query:"page" validate:"omitempty,min=1"`
 	Offset       int32
 }
 
 type UpdateCampaignDTO struct {
-	CampaignID        string       `params:"campaignId"`
-	AdvertiserID      string       `params:"advertiserId"`
+	CampaignID        string       `params:"campaignId" validate:"required,uuid"`
+	AdvertiserID      string       `params:"advertiserId" validate:"required,uuid"`
 	ImpressionsLimit  *int32       `json:"impressions_limit"`
 	ClicksLimit       *int32       `json:"clicks_limit"`
 	CostPerImpression float64      `json:"cost_per_impression"`
@@ -63,12 +63,12 @@ type UpdateCampaignDTO struct {
 
 type TargetUpdate struct {
 	Gender   *string `json:"gender"`
-	AgeFrom  int32   `json:"age_from"`
-	AgeTo    int32   `json:"age_to"`
-	Location string  `json:"location"`
+	AgeFrom  int32   `json:"age_from" validate:"omitempty,min=0,max=200"`
+	AgeTo    int32   `json:"age_to" validate:"omitempty,min=0,max=200"`
+	Location string  `json:"location" validate:"omitempty,max=255"`
 }
 
 type DeleteCampaignDTO struct {
-	CampaignID   string `params:"campaignId"`
-	AdvertiserID string `params:"advertiserId"`
+	CampaignID   string `params:"campaignId" validate:"required,uuid"`
+	AdvertiserID string `params:"advertiserId" validate:"required,uuid"`
 }
