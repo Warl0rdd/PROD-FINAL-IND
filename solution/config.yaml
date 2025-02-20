@@ -6,11 +6,6 @@ service: # изменять в случае изменений в .env
 
     port: 3000
 
-    jwt:
-      secret: "super-strong-secret"
-      access-token-expiration: "60" # в минутах
-      refresh-token-expiration: "43200" #  30 дней в минутах
-
   database:
     ssl-mode: "disable"
 

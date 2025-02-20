@@ -47,6 +47,8 @@ Form data: image (file: image/png || image/jpeg)
 
 ## Moderation
 
+Модерация применяется в зависимости от значения поля `settings.moderation` в конфиге (config.yaml)
+
 ### GET /moderation/campaigns
 
 Получить кампании для модерации

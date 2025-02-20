@@ -72,7 +72,7 @@ sudo docker run hello-world
 ```shell
 docker compose up
 ```
-Вуа-ля!
+Вуа-ля! Бэкенд доступен на порту 8080.
 
 Юнит тесты:
 
