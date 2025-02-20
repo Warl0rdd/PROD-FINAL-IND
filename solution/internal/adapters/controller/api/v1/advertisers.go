@@ -62,13 +62,15 @@ func (h *AdvertiserHandler) CreateAdvertiser(c fiber.Ctx) error {
 		attribute.String("endpoint", "/advertisers/bulk"),
 	)
 
-	_, err := h.advertiserService.CreateAdvertiser(ctx, DTOs[0])
-	if err != nil {
-		span.RecordError(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(dto.HTTPError{
-			Code:    fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
+	for _, v := range DTOs {
+		_, err := h.advertiserService.CreateAdvertiser(ctx, v)
+		if err != nil {
+			span.RecordError(err)
+			return c.Status(fiber.StatusInternalServerError).JSON(dto.HTTPError{
+				Code:    fiber.StatusInternalServerError,
+				Message: err.Error(),
+			})
+		}
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(DTOs)

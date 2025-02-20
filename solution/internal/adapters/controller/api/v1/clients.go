@@ -9,7 +9,6 @@ import (
 	"solution/cmd/app"
 	"solution/internal/adapters/controller/api/validator"
 	"solution/internal/adapters/database/postgres"
-	"solution/internal/adapters/logger"
 	"solution/internal/domain/dto"
 	"solution/internal/domain/entity"
 	"solution/internal/domain/service"
@@ -52,8 +51,6 @@ func (h *ClientHandler) CreateClients(c fiber.Ctx) error {
 		attribute.Int("clients.count", len(DTOs)),
 		attribute.String("endpoint", "/clients/bulk"),
 	)
-
-	logger.Log.Debugf("DTOs: %v", DTOs)
 
 	for _, v := range DTOs {
 		if err := h.validator.ValidateData(v); err != nil {
