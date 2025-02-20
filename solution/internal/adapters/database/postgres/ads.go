@@ -90,7 +90,7 @@ SELECT c.id,
        c.cost_per_click,
        c.ad_title,
        c.ad_text,
-       COALESCE(ms.score, 0)
+       COALESCE(ms.score, 0) AS score
 FROM campaigns c
          LEFT JOIN ml_scores ms on c.advertiser_id = ms.advertiser_id AND ms.client_id = $1
          INNER JOIN clients cl ON cl.id = $1
@@ -109,7 +109,7 @@ WHERE CASE
   AND NOT EXISTS (SELECT 1
                   FROM impressions i
                   WHERE i.campaign_id = c.id
-                    AND i.client_id = $1)
+                    AND i.client_id = $1);
 `
 
 type GetEligibleAdsParams struct {

@@ -5,7 +5,7 @@ SELECT c.id,
        c.cost_per_click,
        c.ad_title,
        c.ad_text,
-       COALESCE(ms.score, 0)
+       COALESCE(ms.score, 0) AS score
 FROM campaigns c
          LEFT JOIN ml_scores ms on c.advertiser_id = ms.advertiser_id AND ms.client_id = $1
          INNER JOIN clients cl ON cl.id = $1
@@ -16,12 +16,11 @@ WHERE CASE
                                           WHEN c.gender = 'FEMALE' THEN cl.gender = 'FEMALE' END END
   AND c.age_from <= cl.age
   AND c.age_to >= cl.age
-  AND CASE WHEN c.location = '' THEN TRUE WHEN c.location != 'ALL' THEN cl.location = c.location END
+  AND CASE WHEN c.location = '' THEN TRUE WHEN c.location != '' THEN cl.location = c.location END
   AND c.start_date <= $2
   AND c.end_date >= $2
   AND c.clicks_count < c.clicks_limit
   AND c.impressions_count < c.impression_limit
-  AND c.approved
   AND NOT EXISTS (SELECT 1
                   FROM impressions i
                   WHERE i.campaign_id = c.id
