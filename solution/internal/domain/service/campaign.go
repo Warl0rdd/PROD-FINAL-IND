@@ -52,6 +52,10 @@ func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.Cr
 		return dto.CampaignDTO{}, errorz.BadRequest
 	}
 
+	if campaignDTO.Targeting.Gender == "" {
+		campaignDTO.Targeting.Gender = "ALL"
+	}
+
 	created, err := s.campaignStorage.CreateCampaign(ctx, postgres.CreateCampaignParams{
 		AdvertiserID:      uuid.MustParse(campaignDTO.AdvertiserID),
 		ImpressionLimit:   campaignDTO.ImpressionsLimit,
