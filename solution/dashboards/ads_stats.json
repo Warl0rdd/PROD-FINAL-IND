@@ -37,7 +37,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "light-yellow"
               }
             ]
           }
@@ -52,6 +52,33 @@
               {
                 "id": "displayName",
                 "value": "Conversion"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red"
+                    },
+                    {
+                      "color": "light-yellow",
+                      "value": 25
+                    },
+                    {
+                      "color": "orange",
+                      "value": 50
+                    },
+                    {
+                      "color": "green",
+                      "value": 75
+                    },
+                    {
+                      "color": "dark-green",
+                      "value": 90
+                    }
+                  ]
+                }
               }
             ]
           },
@@ -88,6 +115,17 @@
               {
                 "id": "displayName",
                 "value": "Spent On Impressions"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "semi-dark-red"
+                    }
+                  ]
+                }
               }
             ]
           },
@@ -100,6 +138,17 @@
               {
                 "id": "displayName",
                 "value": "Spent On Clicks"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "semi-dark-red"
+                    }
+                  ]
+                }
               }
             ]
           },
@@ -112,6 +161,17 @@
               {
                 "id": "displayName",
                 "value": "Total Expenses"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "semi-dark-red"
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -192,7 +252,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "light-yellow"
               }
             ]
           }
@@ -207,6 +267,33 @@
               {
                 "id": "displayName",
                 "value": "Conversion"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "dark-red"
+                    },
+                    {
+                      "color": "light-yellow",
+                      "value": 25
+                    },
+                    {
+                      "color": "orange",
+                      "value": 50
+                    },
+                    {
+                      "color": "green",
+                      "value": 75
+                    },
+                    {
+                      "color": "dark-green",
+                      "value": 90
+                    }
+                  ]
+                }
               }
             ]
           },
@@ -243,6 +330,17 @@
               {
                 "id": "displayName",
                 "value": "Spent On Impressions"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "semi-dark-red"
+                    }
+                  ]
+                }
               }
             ]
           },
@@ -255,6 +353,17 @@
               {
                 "id": "displayName",
                 "value": "Spent On Clicks"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "semi-dark-red"
+                    }
+                  ]
+                }
               }
             ]
           },
@@ -267,6 +376,17 @@
               {
                 "id": "displayName",
                 "value": "Total Expenses"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "semi-dark-red"
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -796,6 +916,6 @@
   "timezone": "browser",
   "title": "Ads Statistics",
   "uid": "bed8cgti31lvkc",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }
