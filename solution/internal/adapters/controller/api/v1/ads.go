@@ -66,7 +66,7 @@ func (h *AdsHandler) GetAds(c fiber.Ctx) error {
 
 	if err != nil {
 		span.RecordError(err)
-		if errors.Is(err, pgx.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) || errors.Is(err, errorz.NotFound) {
 			return c.Status(fiber.StatusNotFound).JSON(dto.HTTPError{
 				Code:    fiber.StatusNotFound,
 				Message: "Ads not found",
