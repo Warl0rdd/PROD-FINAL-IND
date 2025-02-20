@@ -29,7 +29,7 @@ func (s *imageStorage) UploadImage(ctx context.Context, image *multipart.File, c
 	defer span.End()
 
 	_, err := s.client.PutObject(ctx, s.bucket, campaignId.String(), *image, size, minio.PutObjectOptions{
-		ContentType: "image/png",
+		ContentType: contentType,
 	})
 
 	return err

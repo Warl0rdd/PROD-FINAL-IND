@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/spf13/viper"
 	"go.opentelemetry.io/otel"
 	"solution/internal/domain/common/errorz"
 )
@@ -82,7 +83,7 @@ func (s *adsStorage) AddImpression(ctx context.Context, arg AddImpressionParams)
 	return err
 }
 
-const getEligibleAds = `-- name: GetEligibleAds :many
+var getEligibleAds = `-- name: GetEligibleAds :many
 SELECT c.id,
        c.advertiser_id,
        c.cost_per_impression,
@@ -105,11 +106,10 @@ WHERE CASE
   AND c.end_date >= $2
   AND c.clicks_count < c.clicks_limit
   AND c.impressions_count < c.impression_limit
-  AND c.approved
   AND NOT EXISTS (SELECT 1
                   FROM impressions i
                   WHERE i.campaign_id = c.id
-                    AND i.client_id = $1);
+                    AND i.client_id = $1)
 `
 
 type GetEligibleAdsParams struct {
@@ -131,6 +131,12 @@ func (s *adsStorage) GetEligibleAds(ctx context.Context, arg GetEligibleAdsParam
 	tracer := otel.Tracer("ads-storage")
 	ctx, span := tracer.Start(ctx, "ads-storage")
 	defer span.End()
+
+	if viper.GetBool("settings.moderation") {
+		getEligibleAds += " AND c.approved"
+	}
+
+	getEligibleAds += ";"
 
 	rows, err := s.db.Query(ctx, getEligibleAds, arg.ClientID, arg.Day)
 	if err != nil {

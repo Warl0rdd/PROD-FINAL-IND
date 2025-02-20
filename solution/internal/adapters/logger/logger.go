@@ -9,7 +9,6 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"time"
 )
 
 var (
@@ -50,11 +49,6 @@ func New(debug bool) {
 	}
 
 	LogProvider = provider
-}
-
-// customTimeEncoder форматирует время в GMT+0
-func customTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-	enc.AppendString(t.In(time.FixedZone("GMT+0", 3*60*60)).Format("2006-01-02 15:04:05"))
 }
 
 // Да, плохо, но пришлось эту функцию перенести сюда из app.go

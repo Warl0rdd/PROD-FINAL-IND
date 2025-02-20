@@ -48,15 +48,24 @@ type GetCampaignsWithPaginationDTO struct {
 }
 
 type UpdateCampaignDTO struct {
-	CampaignID        string  `params:"campaignId"`
-	AdvertiserID      string  `params:"advertiserId"`
-	ImpressionsLimit  int32   `json:"impressions_limit"`
-	ClicksLimit       int32   `json:"clicks_limit"`
-	CostPerImpression float64 `json:"cost_per_impression"`
-	CostPerClick      float64 `json:"cost_per_click"`
-	AdTitle           string  `json:"ad_title"`
-	AdText            string  `json:"ad_text"`
-	Targeting         Target  `json:"targeting"`
+	CampaignID        string       `params:"campaignId"`
+	AdvertiserID      string       `params:"advertiserId"`
+	ImpressionsLimit  *int32       `json:"impressions_limit"`
+	ClicksLimit       *int32       `json:"clicks_limit"`
+	CostPerImpression float64      `json:"cost_per_impression"`
+	CostPerClick      float64      `json:"cost_per_click"`
+	AdTitle           string       `json:"ad_title"`
+	AdText            string       `json:"ad_text"`
+	StartDate         *int         `json:"start_date"`
+	EndDate           *int         `json:"end_date"`
+	Targeting         TargetUpdate `json:"targeting"`
+}
+
+type TargetUpdate struct {
+	Gender   *string `json:"gender"`
+	AgeFrom  int32   `json:"age_from"`
+	AgeTo    int32   `json:"age_to"`
+	Location string  `json:"location"`
 }
 
 type DeleteCampaignDTO struct {

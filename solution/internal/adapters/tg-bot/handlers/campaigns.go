@@ -638,18 +638,15 @@ func (h *CampaignHandler) UpdateCampaign(traceCtx context.Context, tgCtx tele.Co
 
 	updateDTO.AdvertiserID = *steps[0].result
 	updateDTO.CampaignID = *steps[1].result
-	updateDTO.ImpressionsLimit = int32(parsing.IntMustParse(*steps[2].result))
-	updateDTO.ClicksLimit = int32(parsing.IntMustParse(*steps[3].result))
+	updateDTO.ImpressionsLimit = parsing.Int32PointerMustParse(*steps[2].result)
+	updateDTO.ClicksLimit = parsing.Int32PointerMustParse(*steps[3].result)
 	updateDTO.CostPerImpression = parsing.Float64MustParse(*steps[4].result)
 	updateDTO.CostPerClick = parsing.Float64MustParse(*steps[5].result)
 	updateDTO.AdTitle = *steps[6].result
 	updateDTO.AdText = *steps[7].result
 
-	if *steps[8].result != "" {
-		updateDTO.Targeting.Gender = *steps[8].result
-	} else {
-		updateDTO.Targeting.Gender = "ALL"
-	}
+	updateDTO.Targeting.Gender = steps[8].result
+
 	if *steps[9].result != "" {
 		updateDTO.Targeting.AgeFrom = int32(parsing.IntMustParse(*steps[9].result))
 	} else {

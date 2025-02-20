@@ -247,6 +247,11 @@ func (h *CampaignHandler) UpdateCampaign(c fiber.Ctx) error {
 				Code:    fiber.StatusForbidden,
 				Message: "Can't edit clicks and impressions limits after start date",
 			})
+		} else if errors.Is(err, errorz.BadRequest) {
+			return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
+				Code:    fiber.StatusBadRequest,
+				Message: err.Error(),
+			})
 		}
 
 		if updated == (dto.CampaignDTO{}) {

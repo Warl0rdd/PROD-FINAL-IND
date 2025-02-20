@@ -71,7 +71,7 @@ func (s *adsService) GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDT
 	scores := make(map[float64]dto.AdDTO, len(ads))
 
 	for _, ad := range ads {
-		score := adUtils.AdScore(ad.CostPerImpression, ad.CostPerClick, float64(ad.Score), s.redisLearningStorage.GetR0(ctx))
+		score := adUtils.AdScore(ad.CostPerImpression, ad.CostPerClick, ad.Score, s.redisLearningStorage.GetR0(ctx))
 
 		scores[score] = dto.AdDTO{
 			AdID:         ad.ID.String(),

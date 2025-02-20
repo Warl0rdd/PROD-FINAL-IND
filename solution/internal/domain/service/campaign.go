@@ -48,6 +48,10 @@ func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.Cr
 		ageTo = 999
 	}
 
+	if campaignDTO.StartDate > campaignDTO.EndDate {
+		return dto.CampaignDTO{}, errorz.BadRequest
+	}
+
 	created, err := s.campaignStorage.CreateCampaign(ctx, postgres.CreateCampaignParams{
 		AdvertiserID:      uuid.MustParse(campaignDTO.AdvertiserID),
 		ImpressionLimit:   campaignDTO.ImpressionsLimit,
@@ -216,9 +220,25 @@ func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.Up
 	}
 
 	if campaign.StartDate <= int32(day) {
-		if campaignDTO.ClicksLimit != 0 || campaignDTO.ImpressionsLimit != 0 {
-			return dto.CampaignDTO{}, errorz.Forbidden
+		if campaignDTO.ClicksLimit != nil || campaignDTO.ImpressionsLimit != nil || campaignDTO.StartDate != nil || campaignDTO.EndDate != nil {
+			return dto.CampaignDTO{}, errorz.BadRequest
 		}
+	}
+
+	if campaignDTO.StartDate != nil && (*campaignDTO.StartDate < day || *campaignDTO.StartDate > int(campaign.EndDate)) {
+		return dto.CampaignDTO{}, errorz.BadRequest
+	}
+
+	if campaignDTO.EndDate != nil && (*campaignDTO.EndDate < day || *campaignDTO.EndDate < int(campaign.StartDate)) {
+		return dto.CampaignDTO{}, errorz.BadRequest
+	}
+
+	if campaignDTO.StartDate != nil && campaignDTO.EndDate != nil && *campaignDTO.StartDate > *campaignDTO.EndDate {
+		return dto.CampaignDTO{}, errorz.BadRequest
+	}
+
+	if campaignDTO.Targeting.Gender != nil && (*campaignDTO.Targeting.Gender != "MALE" && *campaignDTO.Targeting.Gender != "FEMALE" && *campaignDTO.Targeting.Gender != "ALL") {
+		return dto.CampaignDTO{}, errorz.BadRequest
 	}
 
 	updatedCampaign, err := s.campaignStorage.UpdateCampaign(ctx, postgres.UpdateCampaignParams{
@@ -230,6 +250,8 @@ func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.Up
 		AdText:            campaignDTO.AdText,
 		ImpressionLimit:   campaignDTO.ImpressionsLimit,
 		ClicksLimit:       campaignDTO.ClicksLimit,
+		StartDate:         campaignDTO.StartDate,
+		EndDate:           campaignDTO.EndDate,
 		AgeFrom: pgtype.Int4{
 			Int32: campaignDTO.Targeting.AgeFrom,
 			Valid: true,
@@ -242,8 +264,9 @@ func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.Up
 			String: campaignDTO.Targeting.Location,
 			Valid:  true,
 		},
-		Gender: entity.CampaignGender(campaignDTO.Targeting.Gender),
+		Gender: campaignDTO.Targeting.Gender,
 	})
+
 	if err != nil {
 		return dto.CampaignDTO{}, err
 	}
