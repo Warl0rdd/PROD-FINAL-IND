@@ -224,7 +224,8 @@ func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.Up
 	}
 
 	if campaign.StartDate <= int32(day) {
-		if campaignDTO.ClicksLimit != nil || campaignDTO.ImpressionsLimit != nil || campaignDTO.StartDate != nil || campaignDTO.EndDate != nil {
+		if campaignDTO.ClicksLimit != nil || campaignDTO.ImpressionsLimit != nil || campaignDTO.StartDate != nil || campaignDTO.EndDate != nil || campaignDTO.Targeting.Gender != nil ||
+			campaignDTO.Targeting.AgeFrom != 0 || campaignDTO.Targeting.AgeTo != 0 || campaignDTO.Targeting.Location != "" {
 			return dto.CampaignDTO{}, errorz.BadRequest
 		}
 	}
