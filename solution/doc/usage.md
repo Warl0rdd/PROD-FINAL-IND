@@ -15,7 +15,7 @@
 Загрузить или обновить картинку
 
 Request body:
-Form data: image (file: image/png)
+Form data: image (file: image/png || image/jpeg)
 
 Коды ответов:
 

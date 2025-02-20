@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.opentelemetry.io/otel"
+	"solution/internal/domain/common/errorz"
 )
 
 type adsStorage struct {
@@ -17,10 +18,19 @@ func NewAdsStorage(db *pgxpool.Pool) *adsStorage {
 	}
 }
 
-const addClick = `-- name: AddClick :exec
-INSERT INTO clicks (campaign_id, client_id, day)
-VALUES ($1, $2, $3)
+const addClick = `-- name: AddClick :one
+INSERT INTO clicks (campaign_id, client_id, day, cost)
+SELECT $1, $2, $3, c.cost_per_click
+FROM campaigns c
+WHERE c.id = $1
+  AND EXISTS (
+    SELECT 1
+    FROM clicks cl
+    WHERE cl.campaign_id = $1
+      AND cl.client_id = $2
+)
 ON CONFLICT (campaign_id, client_id) DO NOTHING
+RETURNING clicks.id;
 `
 
 type AddClickParams struct {
@@ -34,7 +44,14 @@ func (s *adsStorage) AddClick(ctx context.Context, arg AddClickParams) error {
 	ctx, span := tracer.Start(ctx, "ads-storage")
 	defer span.End()
 
-	_, err := s.db.Exec(ctx, addClick, arg.CampaignID, arg.ClientID, arg.Day)
+	row := s.db.QueryRow(ctx, addClick, arg.CampaignID, arg.ClientID, arg.Day)
+	var id uuid.UUID
+	err := row.Scan(&id)
+
+	if id == uuid.Nil {
+		return errorz.Forbidden
+	}
+
 	return err
 }
 
@@ -72,9 +89,9 @@ SELECT c.id,
        c.cost_per_click,
        c.ad_title,
        c.ad_text,
-       ms.score
+       COALESCE(ms.score, 0)
 FROM campaigns c
-         INNER JOIN ml_scores ms on c.advertiser_id = ms.advertiser_id AND ms.client_id = $1
+         LEFT JOIN ml_scores ms on c.advertiser_id = ms.advertiser_id AND ms.client_id = $1
          INNER JOIN clients cl ON cl.id = $1
 WHERE CASE
           WHEN c.gender = 'ALL' THEN TRUE

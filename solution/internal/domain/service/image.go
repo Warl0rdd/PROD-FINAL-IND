@@ -9,7 +9,7 @@ import (
 )
 
 type ImageStorage interface {
-	UploadImage(ctx context.Context, image *multipart.File, campaignId uuid.UUID, size int64) error
+	UploadImage(ctx context.Context, image *multipart.File, contentType string, campaignId uuid.UUID, size int64) error
 	GetImage(ctx context.Context, campaignId uuid.UUID) ([]byte, error)
 	DeleteImage(ctx context.Context, campaignId uuid.UUID) error
 }
@@ -43,7 +43,7 @@ func (s *imageService) UploadImage(ctx context.Context, imageDTO dto.ImageUpload
 		return err
 	}
 
-	return s.imageStorage.UploadImage(ctx, &file, campaignId, imageDTO.Image.Size)
+	return s.imageStorage.UploadImage(ctx, &file, imageDTO.ContentType, campaignId, imageDTO.Image.Size)
 }
 
 func (s *imageService) GetImage(ctx context.Context, imageDTO dto.GetImageDTO) ([]byte, error) {

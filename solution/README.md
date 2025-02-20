@@ -80,6 +80,8 @@ docker compose up
 go test -v ./...
 ```
 
+После запуска тг бот будет доступен [здесь](https://t.me/prod_warl0rdd_bot)
+
 <a id="see_also"></a>
 ## Смотрите также
 

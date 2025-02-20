@@ -11,6 +11,7 @@ import (
 	"solution/internal/adapters/controller/api/validator"
 	"solution/internal/adapters/database/postgres"
 	"solution/internal/adapters/database/redis"
+	"solution/internal/domain/common/errorz"
 	"solution/internal/domain/dto"
 	"solution/internal/domain/service"
 )
@@ -120,6 +121,14 @@ func (h *AdsHandler) Click(c fiber.Ctx) error {
 	err := h.adsService.Click(ctx, clickDTO)
 	if err != nil {
 		span.RecordError(err)
+
+		if errors.Is(err, errorz.Forbidden) {
+			return c.Status(fiber.StatusForbidden).JSON(dto.HTTPError{
+				Code:    fiber.StatusForbidden,
+				Message: "You can click on an ad only after you've seen it",
+			})
+		}
+
 		return c.Status(fiber.StatusInternalServerError).JSON(dto.HTTPError{
 			Code:    fiber.StatusInternalServerError,
 			Message: err.Error(),

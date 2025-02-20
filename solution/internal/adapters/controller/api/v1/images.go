@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"github.com/gofiber/fiber/v3"
@@ -78,6 +79,7 @@ func (h *ImageHandler) UploadImage(c fiber.Ctx) error {
 	}
 
 	fileHeader, err := content.Read(headerBuff)
+	defer content.Close()
 
 	if err != nil {
 		span.RecordError(err)
@@ -87,11 +89,13 @@ func (h *ImageHandler) UploadImage(c fiber.Ctx) error {
 		})
 	}
 
-	if contentType := http.DetectContentType(headerBuff[:fileHeader]); contentType != "image/png" {
+	contentType := http.DetectContentType(headerBuff[:fileHeader])
+
+	if contentType != "image/png" && contentType != "image/jpeg" {
 		span.RecordError(err)
 		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
 			Code:    fiber.StatusBadRequest,
-			Message: "Invalid file type, only png images are supported",
+			Message: "Invalid file type, only png and jpg/jpeg images are supported",
 		})
 	}
 
@@ -103,6 +107,7 @@ func (h *ImageHandler) UploadImage(c fiber.Ctx) error {
 	)
 
 	imageDTO.Image = file
+	imageDTO.ContentType = contentType
 
 	if err := h.imageService.UploadImage(ctx, imageDTO); err != nil {
 		span.RecordError(err)
@@ -155,7 +160,19 @@ func (h *ImageHandler) GetImage(c fiber.Ctx) error {
 		})
 	}
 
-	c.Set("Content-Type", "image/png")
+	headerBuff := make([]byte, 512)
+
+	fileHeader, err := bytes.NewReader(image).Read(headerBuff)
+
+	if err != nil {
+		span.RecordError(err)
+		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
+			Code:    fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	c.Set("Content-Type", http.DetectContentType(headerBuff[:fileHeader]))
 
 	return c.Status(fiber.StatusOK).Send(image)
 }

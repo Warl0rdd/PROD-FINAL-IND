@@ -5,9 +5,9 @@ SELECT c.id,
        c.cost_per_click,
        c.ad_title,
        c.ad_text,
-       ms.score
+       COALESCE(ms.score, 0)
 FROM campaigns c
-         INNER JOIN ml_scores ms on c.advertiser_id = ms.advertiser_id AND ms.client_id = $1
+         LEFT JOIN ml_scores ms on c.advertiser_id = ms.advertiser_id AND ms.client_id = $1
          INNER JOIN clients cl ON cl.id = $1
 WHERE CASE
           WHEN c.gender = 'ALL' THEN TRUE
@@ -32,7 +32,16 @@ INSERT INTO impressions (campaign_id, client_id, day, model_score, cost)
 SELECT $1, $2, $3, $4, cost_per_impression FROM campaigns c WHERE c.id = $1
 ON CONFLICT (campaign_id, client_id) DO NOTHING;
 
--- name: AddClick :exec
+-- name: AddClick :one
 INSERT INTO clicks (campaign_id, client_id, day, cost)
-SELECT $1, $2, $3, cost_per_click FROM campaigns c WHERE c.id = $1
-ON CONFLICT (campaign_id, client_id) DO NOTHING;
+SELECT $1, $2, $3, c.cost_per_click
+FROM campaigns c
+WHERE c.id = $1
+  AND EXISTS (
+    SELECT 1
+    FROM clicks cl
+    WHERE cl.campaign_id = $1
+      AND cl.client_id = $2
+)
+ON CONFLICT (campaign_id, client_id) DO NOTHING
+RETURNING clicks.id;

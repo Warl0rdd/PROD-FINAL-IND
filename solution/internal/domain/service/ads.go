@@ -108,8 +108,6 @@ func (s *adsService) GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDT
 	return scores[maxKey], nil
 }
 
-// TODO пользователь может кликнуть, только если он видел рекламу
-
 func (s *adsService) Click(ctx context.Context, clickDTO dto.AddClickDTO) error {
 	tracer := otel.Tracer("ads-service")
 	ctx, span := tracer.Start(ctx, "ads-service")
