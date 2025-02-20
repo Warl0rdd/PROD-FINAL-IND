@@ -39,9 +39,9 @@ FROM campaigns c
 WHERE c.id = $1
   AND EXISTS (
     SELECT 1
-    FROM clicks cl
-    WHERE cl.campaign_id = $1
-      AND cl.client_id = $2
+    FROM impressions i
+    WHERE i.campaign_id = $1
+      AND i.client_id = $2
 )
 ON CONFLICT (campaign_id, client_id) DO NOTHING
 RETURNING clicks.id;
