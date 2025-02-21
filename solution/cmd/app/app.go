@@ -41,6 +41,8 @@ type App struct {
 
 // New is a function that creates a new app struct
 func New(config *config.Config) *App {
+	bodySizeLimit := viper.GetInt("settings.body-size-limit") * 1024 * 1024
+
 	fiberApp := fiber.New(fiber.Config{
 		// Global custom error handler
 		ErrorHandler: func(c fiber.Ctx, err error) error {
@@ -49,8 +51,8 @@ func New(config *config.Config) *App {
 				Message: err.Error(),
 			})
 		},
-	},
-	)
+		BodyLimit: bodySizeLimit,
+	})
 
 	fiberApp.Use(recoverer.New(
 		recoverer.Config{

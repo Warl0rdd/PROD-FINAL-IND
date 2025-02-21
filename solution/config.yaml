@@ -14,3 +14,4 @@ settings:
   listen-tls: false # false - http, true - https (при первом старте до выпуска сертификатов - ставить false, после - true)
   timezone: "GMT+3" # часовой пояс в формате "GMT+3"
   moderation: false
+  body-size-limit: 10 # Лимит размера тела запроса в мегабайтах (в основном относится к картинкам)
