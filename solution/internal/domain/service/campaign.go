@@ -10,6 +10,7 @@ import (
 	"solution/internal/domain/common/errorz"
 	"solution/internal/domain/dto"
 	"solution/internal/domain/entity"
+	"solution/internal/domain/utils/pointers"
 )
 
 type campaignStorage interface {
@@ -41,14 +42,28 @@ func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.Cr
 	ctx, span := tracer.Start(ctx, "campaign-service")
 	defer span.End()
 
-	var ageTo int32
-	if campaignDTO.Targeting.AgeTo != 0 {
-		ageTo = campaignDTO.Targeting.AgeTo
+	var ageFrom, ageTo int32
+	var location string
+
+	if campaignDTO.Targeting.AgeFrom != nil {
+		ageFrom = *campaignDTO.Targeting.AgeFrom
+	} else {
+		ageFrom = 0
+	}
+
+	if campaignDTO.Targeting.AgeTo != nil {
+		ageTo = *campaignDTO.Targeting.AgeTo
 	} else {
 		ageTo = 999
 	}
 
-	if campaignDTO.Targeting.AgeFrom != 0 && campaignDTO.Targeting.AgeTo != 0 && campaignDTO.Targeting.AgeFrom > campaignDTO.Targeting.AgeTo {
+	if campaignDTO.Targeting.Location != nil {
+		location = *campaignDTO.Targeting.Location
+	} else {
+		location = ""
+	}
+
+	if campaignDTO.Targeting.AgeFrom != nil && campaignDTO.Targeting.AgeTo != nil && *campaignDTO.Targeting.AgeFrom > *campaignDTO.Targeting.AgeTo {
 		return dto.CampaignDTO{}, errorz.BadRequest
 	}
 
@@ -56,12 +71,12 @@ func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.Cr
 		return dto.CampaignDTO{}, errorz.BadRequest
 	}
 
-	if campaignDTO.Targeting.Gender != "ALL" && campaignDTO.Targeting.Gender != "MALE" && campaignDTO.Targeting.Gender != "FEMALE" && campaignDTO.Targeting.Gender != "" {
+	if campaignDTO.Targeting.Gender != nil && *campaignDTO.Targeting.Gender != "ALL" && *campaignDTO.Targeting.Gender != "MALE" && *campaignDTO.Targeting.Gender != "FEMALE" {
 		return dto.CampaignDTO{}, errorz.BadRequest
 	}
 
-	if campaignDTO.Targeting.Gender == "" {
-		campaignDTO.Targeting.Gender = "ALL"
+	if campaignDTO.Targeting.Gender == nil {
+		campaignDTO.Targeting.Gender = pointers.String("ALL")
 	}
 
 	if campaignDTO.ClicksLimit > campaignDTO.ImpressionsLimit {
@@ -79,7 +94,7 @@ func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.Cr
 		StartDate:         campaignDTO.StartDate,
 		EndDate:           campaignDTO.EndDate,
 		AgeFrom: pgtype.Int4{
-			Int32: campaignDTO.Targeting.AgeFrom,
+			Int32: ageFrom,
 			Valid: true,
 		},
 		AgeTo: pgtype.Int4{
@@ -87,10 +102,10 @@ func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.Cr
 			Valid: true,
 		},
 		Location: pgtype.Text{
-			String: campaignDTO.Targeting.Location,
+			String: location,
 			Valid:  true,
 		},
-		Gender: entity.CampaignGender(campaignDTO.Targeting.Gender),
+		Gender: entity.CampaignGender(*campaignDTO.Targeting.Gender),
 	})
 
 	if err != nil {
@@ -108,10 +123,10 @@ func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.Cr
 		StartDate:         campaignDTO.StartDate,
 		EndDate:           campaignDTO.EndDate,
 		Targeting: dto.Target{
-			AgeFrom:  campaignDTO.Targeting.AgeFrom,
+			AgeFrom:  ageFrom,
 			AgeTo:    ageTo,
-			Location: campaignDTO.Targeting.Location,
-			Gender:   campaignDTO.Targeting.Gender,
+			Location: location,
+			Gender:   *campaignDTO.Targeting.Gender,
 		},
 	}, nil
 }

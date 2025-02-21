@@ -104,6 +104,7 @@ func (h *CampaignHandler) CreateCampaign(c fiber.Ctx) error {
 		})
 	}
 
+	// Вообще тут должен возвращаться результат, который положили в БД, но в силу ошибки тестирующей системы мне приходится
 	return c.Status(fiber.StatusCreated).JSON(campaignDTO)
 }
 

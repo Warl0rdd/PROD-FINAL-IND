@@ -23,16 +23,23 @@ type Target struct {
 }
 
 type CreateCampaignDTO struct {
-	AdvertiserID      string  `params:"advertiserId" validate:"required,uuid"`
-	ImpressionsLimit  int32   `json:"impressions_limit" validate:"required"`
-	ClicksLimit       int32   `json:"clicks_limit" validate:"required"`
-	CostPerImpression float64 `json:"cost_per_impression" validate:"required"`
-	CostPerClick      float64 `json:"cost_per_click" validate:"required"`
-	AdTitle           string  `json:"ad_title" validate:"required"`
-	AdText            string  `json:"ad_text" validate:"required"`
-	StartDate         int32   `json:"start_date" validate:"required"`
-	EndDate           int32   `json:"end_date" validate:"required"`
-	Targeting         Target  `json:"targeting"`
+	AdvertiserID      string       `params:"advertiserId" validate:"required,uuid"`
+	ImpressionsLimit  int32        `json:"impressions_limit" validate:"required"`
+	ClicksLimit       int32        `json:"clicks_limit" validate:"required"`
+	CostPerImpression float64      `json:"cost_per_impression" validate:"required"`
+	CostPerClick      float64      `json:"cost_per_click" validate:"required"`
+	AdTitle           string       `json:"ad_title" validate:"required"`
+	AdText            string       `json:"ad_text" validate:"required"`
+	StartDate         int32        `json:"start_date" validate:"required"`
+	EndDate           int32        `json:"end_date" validate:"required"`
+	Targeting         TargetCreate `json:"targeting"`
+}
+
+type TargetCreate struct {
+	Gender   *string `json:"gender"`
+	AgeFrom  *int32  `json:"age_from" validate:"omitempty,min=0,max=200"`
+	AgeTo    *int32  `json:"age_to" validate:"omitempty,min=0,max=200"`
+	Location *string `json:"location" validate:"omitempty,max=255"`
 }
 
 type GetCampaignByIDDTO struct {
