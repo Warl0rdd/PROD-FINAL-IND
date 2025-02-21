@@ -9,6 +9,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"os"
 )
 
 var (
@@ -38,7 +39,10 @@ func New(debug bool) {
 		panic(err)
 	}
 
-	core := otelzap.NewCore("internal/adapters/logger", otelzap.WithLoggerProvider(provider))
+	core := zapcore.NewTee(
+		zapcore.NewCore(zapcore.NewConsoleEncoder(zap.NewProductionEncoderConfig()), zapcore.AddSync(os.Stdout), level),
+		otelzap.NewCore("internal/adapters/logger", otelzap.WithLoggerProvider(provider)),
+	)
 
 	core.Enabled(level)
 
