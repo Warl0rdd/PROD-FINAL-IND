@@ -22,9 +22,9 @@ WHERE CASE
   AND c.clicks_count < c.clicks_limit
   AND c.impressions_count < c.impression_limit
   AND NOT EXISTS (SELECT 1
-                  FROM clicks clk
-                  WHERE clk.campaign_id = c.id
-                    AND clk.client_id = $1);
+                  FROM impressions i
+                  WHERE i.campaign_id = c.id
+                    AND i.client_id = $1);
 
 -- name: AddImpression :exec
 INSERT INTO impressions (campaign_id, client_id, day, model_score, cost)
