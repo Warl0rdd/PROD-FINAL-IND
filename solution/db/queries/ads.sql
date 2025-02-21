@@ -16,7 +16,7 @@ WHERE CASE
                                           WHEN c.gender = 'FEMALE' THEN cl.gender = 'FEMALE' END END
   AND c.age_from <= cl.age
   AND c.age_to >= cl.age
-  AND CASE WHEN c.location = '' THEN TRUE WHEN c.location != '' THEN cl.location = c.location END
+  AND (c.location = '' OR cl.location = c.location)
   AND c.start_date <= $2
   AND c.end_date >= $2
   AND c.clicks_count < c.clicks_limit

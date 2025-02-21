@@ -32,14 +32,16 @@ type PostgresLearningStorage interface {
 type adsService struct {
 	adsStorage              AdsStorage
 	dayStorage              DayStorage
+	clientStorage           ClientStorage
 	redisLearningStorage    RedisLearningStorage
 	postgresLearningStorage PostgresLearningStorage
 }
 
-func NewAdsService(adsStorage AdsStorage, dayStorage DayStorage, learningStorage RedisLearningStorage, postgresLearningStorage PostgresLearningStorage) *adsService {
+func NewAdsService(adsStorage AdsStorage, dayStorage DayStorage, learningStorage RedisLearningStorage, postgresLearningStorage PostgresLearningStorage, clientStorage ClientStorage) *adsService {
 	return &adsService{
 		adsStorage:              adsStorage,
 		dayStorage:              dayStorage,
+		clientStorage:           clientStorage,
 		redisLearningStorage:    learningStorage,
 		postgresLearningStorage: postgresLearningStorage,
 	}
@@ -59,6 +61,14 @@ func (s *adsService) GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDT
 		ClientID: uuid.MustParse(adsDTO.ClientID),
 		Day:      int32(day),
 	})
+
+	// TODO убрать
+
+	client, _ := s.clientStorage.GetClientById(ctx, uuid.MustParse(adsDTO.ClientID))
+
+	logger.Log.Debugf("Client: %v", client)
+
+	logger.Log.Debugf("ads: %v", ads)
 
 	if errGet != nil {
 		return dto.AdDTO{}, errGet

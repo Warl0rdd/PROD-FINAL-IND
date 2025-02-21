@@ -10,16 +10,16 @@ import (
 	"solution/internal/domain/entity"
 )
 
-type clientStorage interface {
+type ClientStorage interface {
 	CreateClient(ctx context.Context, arg postgres.CreateClientParams) (entity.Client, error)
 	GetClientById(ctx context.Context, id uuid.UUID) (entity.Client, error)
 }
 
 type clientService struct {
-	clientStorage clientStorage
+	clientStorage ClientStorage
 }
 
-func NewClientService(clientStorage clientStorage) *clientService {
+func NewClientService(clientStorage ClientStorage) *clientService {
 	return &clientService{
 		clientStorage: clientStorage,
 	}

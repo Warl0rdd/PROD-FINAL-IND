@@ -52,6 +52,10 @@ func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.Cr
 		return dto.CampaignDTO{}, errorz.BadRequest
 	}
 
+	if campaignDTO.Targeting.Gender != "ALL" && campaignDTO.Targeting.Gender != "MALE" && campaignDTO.Targeting.Gender != "FEMALE" && campaignDTO.Targeting.Gender != "" {
+		return dto.CampaignDTO{}, errorz.BadRequest
+	}
+
 	if campaignDTO.Targeting.Gender == "" {
 		campaignDTO.Targeting.Gender = "ALL"
 	}
@@ -95,7 +99,12 @@ func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.Cr
 		AdText:            campaignDTO.AdText,
 		StartDate:         campaignDTO.StartDate,
 		EndDate:           campaignDTO.EndDate,
-		Targeting:         campaignDTO.Targeting,
+		Targeting: dto.Target{
+			AgeFrom:  campaignDTO.Targeting.AgeFrom,
+			AgeTo:    ageTo,
+			Location: campaignDTO.Targeting.Location,
+			Gender:   campaignDTO.Targeting.Gender,
+		},
 	}, nil
 }
 
