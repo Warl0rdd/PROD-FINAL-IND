@@ -34,4 +34,4 @@ EXPOSE 3000
 #COPY assets assets
 
 # Run the application.
-CMD ["./application"]
+CMD ["sh", "-c", "sleep 2 && ./application"]
