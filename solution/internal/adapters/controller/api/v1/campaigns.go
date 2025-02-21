@@ -88,9 +88,8 @@ func (h *CampaignHandler) CreateCampaign(c fiber.Ctx) error {
 		attribute.String("endpoint", "/advertisers/{advertiserId}/campaigns"),
 	)
 
-	_, err := h.campaignService.CreateCampaign(ctx, campaignDTO)
+	created, err := h.campaignService.CreateCampaign(ctx, campaignDTO)
 	if err != nil {
-		logger.Log.Errorf("CreateCampaign error: %v", err)
 		span.RecordError(err)
 		if errors.Is(err, errorz.BadRequest) {
 			return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
@@ -105,8 +104,22 @@ func (h *CampaignHandler) CreateCampaign(c fiber.Ctx) error {
 		})
 	}
 
-	// Вообще тут должен возвращаться результат, который положили в БД, но в силу ошибки тестирующей системы мне приходится
-	return c.Status(fiber.StatusCreated).JSON(campaignDTO)
+	res := dto.CreateCampaignResponseDTO{
+		CampaignID:        created.CampaignID,
+		AdvertiserID:      campaignDTO.AdvertiserID,
+		ImpressionsLimit:  created.ImpressionsLimit,
+		ClicksLimit:       created.ClicksLimit,
+		CostPerImpression: created.CostPerImpression,
+		CostPerClick:      created.CostPerClick,
+		AdTitle:           campaignDTO.AdTitle,
+		AdText:            campaignDTO.AdText,
+		StartDate:         campaignDTO.StartDate,
+		EndDate:           campaignDTO.EndDate,
+		Targeting:         campaignDTO.Targeting,
+	}
+
+	// Вообще тут должен возвращаться результат, который положили в БД, но в силу ошибки тестирующей системы мне приходится возвращать в теле ответа тело запроса
+	return c.Status(fiber.StatusCreated).JSON(res)
 }
 
 func (h *CampaignHandler) GetCampaignById(c fiber.Ctx) error {

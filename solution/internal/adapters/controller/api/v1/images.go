@@ -93,8 +93,9 @@ func (h *ImageHandler) UploadImage(c fiber.Ctx) error {
 
 	if contentType != "image/png" && contentType != "image/jpeg" {
 		span.RecordError(err)
-		return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
-			Code:    fiber.StatusBadRequest,
+		c.Set("Accept", "image/png,image/jpeg")
+		return c.Status(fiber.StatusUnsupportedMediaType).JSON(dto.HTTPError{
+			Code:    fiber.StatusUnsupportedMediaType,
 			Message: "Invalid file type, only png and jpg/jpeg images are supported",
 		})
 	}
