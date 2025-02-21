@@ -52,6 +52,7 @@ func (s *adsService) GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDT
 
 	day, err := s.dayStorage.GetDay(ctx)
 	if err != nil {
+		logger.Log.Debugf("Ads service: day error: %v", err)
 		return dto.AdDTO{}, err
 	}
 
@@ -61,10 +62,12 @@ func (s *adsService) GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDT
 	})
 
 	if errGet != nil {
+		logger.Log.Debugf("Ads service: get ads error: %v", errGet)
 		return dto.AdDTO{}, errGet
 	}
 
 	if len(ads) == 0 {
+		logger.Log.Debugf("Ads service: no ads found")
 		return dto.AdDTO{}, errorz.NotFound
 	}
 
@@ -93,6 +96,7 @@ func (s *adsService) GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDT
 	}
 
 	if maxKey == 0.0 {
+		logger.Log.Debugf("Ads service: max key error")
 		return dto.AdDTO{}, errorz.NotFound
 	}
 
@@ -102,6 +106,7 @@ func (s *adsService) GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDT
 		Day:        int32(day),
 		ModelScore: maxKey,
 	}); errImp != nil {
+		logger.Log.Debugf("Ads service: add impression error: %v", errImp)
 		return dto.AdDTO{}, errImp
 	}
 
