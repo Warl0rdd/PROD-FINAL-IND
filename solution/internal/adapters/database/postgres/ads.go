@@ -94,7 +94,11 @@ SELECT c.id,
 FROM campaigns c
          LEFT JOIN ml_scores ms on c.advertiser_id = ms.advertiser_id AND ms.client_id = $1
          INNER JOIN clients cl ON cl.id = $1
-WHERE (c.gender = 'ALL' OR c.gender = cl.gender)
+WHERE CASE
+          WHEN c.gender = 'ALL' THEN TRUE
+          WHEN c.gender != 'ALL' THEN CASE
+                                          WHEN c.gender = 'MALE' THEN cl.gender = 'MALE'
+                                          WHEN c.gender = 'FEMALE' THEN cl.gender = 'FEMALE' END END
   AND c.age_from <= cl.age
   AND c.age_to >= cl.age
   AND (c.location = '' OR cl.location = c.location)
