@@ -90,6 +90,7 @@ func (h *CampaignHandler) CreateCampaign(c fiber.Ctx) error {
 
 	_, err := h.campaignService.CreateCampaign(ctx, campaignDTO)
 	if err != nil {
+		logger.Log.Errorf("CreateCampaign error: %v", err)
 		span.RecordError(err)
 		if errors.Is(err, errorz.BadRequest) {
 			return c.Status(fiber.StatusBadRequest).JSON(dto.HTTPError{
