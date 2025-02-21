@@ -15,6 +15,10 @@ exporters:
     endpoint: http://tempo:4319
     tls:
       insecure: true
+  debug:
+    verbosity: detailed
+    sampling_initial: 5
+    sampling_thereafter: 200
 
 extensions:
   health_check:
@@ -25,7 +29,7 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlphttp/tempo]
+      exporters: [otlphttp/tempo, debug]
     logs:
       receivers: [otlp]
       processors: [batch]
