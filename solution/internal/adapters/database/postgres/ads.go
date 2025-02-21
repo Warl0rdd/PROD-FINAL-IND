@@ -101,7 +101,7 @@ WHERE (c.gender = 'ALL' OR c.gender = cl.gender)
   AND c.start_date <= $2
   AND c.end_date >= $2
   AND c.clicks_count < c.clicks_limit
-  AND c.impressions_count < c.impression_limit;
+  AND c.impressions_count < c.impression_limit
 `
 
 type GetEligibleAdsParams struct {
