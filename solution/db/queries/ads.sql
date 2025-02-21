@@ -24,7 +24,11 @@ WHERE CASE
   AND NOT EXISTS (SELECT 1
                   FROM impressions i
                   WHERE i.campaign_id = c.id
-                    AND i.client_id = $1);
+                    AND i.client_id = $1)
+  AND NOT EXISTS (SELECT 1
+                  FROM clicks cl
+                  WHERE cl.campaign_id = c.id
+                    AND cl.client_id = $1);
 
 -- name: AddImpression :exec
 INSERT INTO impressions (campaign_id, client_id, day, model_score, cost)
