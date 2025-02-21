@@ -78,34 +78,6 @@ func (s *adsStorage) AddImpression(ctx context.Context, arg AddImpressionParams)
 	return err
 }
 
-var getEligibleAds = `-- name: GetEligibleAds :many
-SELECT c.id,
-       c.advertiser_id,
-       c.cost_per_impression,
-       c.cost_per_click,
-       c.ad_title,
-       c.ad_text,
-       COALESCE(ms.score, 0) AS score
-FROM campaigns c
-         LEFT JOIN ml_scores ms on c.advertiser_id = ms.advertiser_id AND ms.client_id = $1
-         INNER JOIN clients cl ON cl.id = $1
-WHERE CASE
-          WHEN c.gender = 'ALL' THEN TRUE
-          WHEN c.gender != 'ALL' THEN CASE
-                                          WHEN c.gender = 'MALE' THEN cl.gender = 'MALE'
-                                          WHEN c.gender = 'FEMALE' THEN cl.gender = 'FEMALE' END END
-  AND c.age_from <= cl.age
-  AND c.age_to >= cl.age
-  AND (c.location = '' OR cl.location = c.location)
-  AND c.start_date <= $2
-  AND c.end_date >= $2
-  AND c.impressions_count < c.impression_limit
-  AND NOT EXISTS (SELECT 1
-                  FROM clicks clk
-                  WHERE clk.campaign_id = c.id
-                    AND clk.client_id = $1)
-`
-
 type GetEligibleAdsParams struct {
 	ClientID uuid.UUID
 	Day      int32
@@ -122,6 +94,34 @@ type GetEligibleAdsRow struct {
 }
 
 func (s *adsStorage) GetEligibleAds(ctx context.Context, arg GetEligibleAdsParams) ([]GetEligibleAdsRow, error) {
+	var getEligibleAds = `-- name: GetEligibleAds :many
+			SELECT c.id,
+				   c.advertiser_id,
+				   c.cost_per_impression,
+				   c.cost_per_click,
+				   c.ad_title,
+				   c.ad_text,
+				   COALESCE(ms.score, 0) AS score
+			FROM campaigns c
+					 LEFT JOIN ml_scores ms on c.advertiser_id = ms.advertiser_id AND ms.client_id = $1
+					 INNER JOIN clients cl ON cl.id = $1
+			WHERE CASE
+					  WHEN c.gender = 'ALL' THEN TRUE
+					  WHEN c.gender != 'ALL' THEN CASE
+													  WHEN c.gender = 'MALE' THEN cl.gender = 'MALE'
+													  WHEN c.gender = 'FEMALE' THEN cl.gender = 'FEMALE' END END
+			  AND c.age_from <= cl.age
+			  AND c.age_to >= cl.age
+			  AND (c.location = '' OR cl.location = c.location)
+			  AND c.start_date <= $2
+			  AND c.end_date >= $2
+			  AND c.impressions_count < c.impression_limit
+			  AND NOT EXISTS (SELECT 1
+							  FROM clicks clk
+							  WHERE clk.campaign_id = c.id
+								AND clk.client_id = $1)
+`
+
 	tracer := otel.Tracer("ads-storage")
 	ctx, span := tracer.Start(ctx, "ads-storage")
 	defer span.End()
