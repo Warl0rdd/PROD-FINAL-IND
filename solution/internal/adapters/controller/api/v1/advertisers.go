@@ -8,6 +8,7 @@ import (
 	"solution/cmd/app"
 	"solution/internal/adapters/controller/api/validator"
 	"solution/internal/adapters/database/postgres"
+	"solution/internal/adapters/logger"
 	"solution/internal/domain/dto"
 	"solution/internal/domain/entity"
 	"solution/internal/domain/service"
@@ -66,6 +67,7 @@ func (h *AdvertiserHandler) CreateAdvertiser(c fiber.Ctx) error {
 		_, err := h.advertiserService.CreateAdvertiser(ctx, v)
 		if err != nil {
 			span.RecordError(err)
+			logger.Log.Errorf("error creating advertiser: %v", err)
 			return c.Status(fiber.StatusInternalServerError).JSON(dto.HTTPError{
 				Code:    fiber.StatusInternalServerError,
 				Message: err.Error(),
