@@ -17,6 +17,7 @@ import (
 	"solution/internal/domain/dto"
 	"solution/internal/domain/service"
 	"solution/internal/domain/utils/parsing"
+	"solution/internal/domain/utils/pointers"
 	"strconv"
 )
 
@@ -282,23 +283,23 @@ func (h *CampaignHandler) CreateCampaign(traceCtx context.Context, tgCtx tele.Co
 	createCampaignDTO.EndDate = int32(parsing.IntMustParse(*steps[8].result))
 
 	if *steps[9].result == "" {
-		createCampaignDTO.Targeting.Gender = "ALL"
+		createCampaignDTO.Targeting.Gender = pointers.String("ALL")
 	} else {
-		createCampaignDTO.Targeting.Gender = *steps[9].result
+		createCampaignDTO.Targeting.Gender = steps[9].result
 	}
 
 	if *steps[10].result != "" {
-		createCampaignDTO.Targeting.AgeFrom = int32(parsing.IntMustParse(*steps[10].result))
+		createCampaignDTO.Targeting.AgeFrom = pointers.Int32(int32(parsing.IntMustParse(*steps[10].result)))
 	} else {
-		createCampaignDTO.Targeting.AgeFrom = 0
+		createCampaignDTO.Targeting.AgeFrom = pointers.Int32(0)
 	}
 	if *steps[11].result != "" {
-		createCampaignDTO.Targeting.AgeTo = int32(parsing.IntMustParse(*steps[11].result))
+		createCampaignDTO.Targeting.AgeTo = pointers.Int32(int32(parsing.IntMustParse(*steps[11].result)))
 	} else {
-		createCampaignDTO.Targeting.AgeTo = 999
+		createCampaignDTO.Targeting.AgeTo = pointers.Int32(999)
 	}
 
-	createCampaignDTO.Targeting.Location = *steps[12].result
+	createCampaignDTO.Targeting.Location = steps[12].result
 
 	result, err := h.service.CreateCampaign(traceCtx, createCampaignDTO)
 
