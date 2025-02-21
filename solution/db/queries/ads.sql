@@ -28,7 +28,9 @@ WHERE CASE
 
 -- name: AddImpression :exec
 INSERT INTO impressions (campaign_id, client_id, day, model_score, cost)
-SELECT $1, $2, $3, $4, cost_per_impression FROM campaigns c WHERE c.id = $1
+SELECT $1, $2, $3, $4, cost_per_impression
+FROM campaigns c
+WHERE c.id = $1
 ON CONFLICT (campaign_id, client_id) DO NOTHING;
 
 -- name: AddClick :one
@@ -36,5 +38,6 @@ INSERT INTO clicks (campaign_id, client_id, day, cost)
 SELECT $1, $2, $3, c.cost_per_click
 FROM campaigns c
 WHERE c.id = $1
+  AND EXISTS(SELECT 1 FROM impressions i WHERE i.campaign_id = $1 AND i.client_id = $2)
 ON CONFLICT (campaign_id, client_id) DO NOTHING
 RETURNING clicks.id;
