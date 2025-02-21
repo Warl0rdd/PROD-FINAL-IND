@@ -52,9 +52,11 @@ func (s *adsStorage) AddClick(ctx context.Context, arg AddClickParams) error {
 }
 
 const addImpression = `-- name: AddImpression :exec
-INSERT INTO impressions (campaign_id, client_id, day, model_score)
-VALUES ($1, $2, $3, $4)
-ON CONFLICT (campaign_id, client_id) DO NOTHING
+INSERT INTO impressions (campaign_id, client_id, day, model_score, cost)
+SELECT $1, $2, $3, $4, cost_per_impression
+FROM campaigns c
+WHERE c.id = $1
+ON CONFLICT (campaign_id, client_id) DO NOTHING;
 `
 
 type AddImpressionParams struct {
