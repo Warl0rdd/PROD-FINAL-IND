@@ -32,5 +32,10 @@ func (s *dayStorage) GetDay(ctx context.Context) (int, error) {
 	ctx, span := tracer.Start(ctx, "GetDay")
 	defer span.End()
 
-	return s.db.Get(ctx, "day").Int()
+	i, e := s.db.Get(ctx, "day").Int()
+
+	if e != nil {
+		return 0, e
+	}
+	return i, nil
 }
