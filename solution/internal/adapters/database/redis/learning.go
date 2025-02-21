@@ -32,8 +32,8 @@ func (s *learningStorage) GetR0(ctx context.Context) float64 {
 
 	r0, err := s.db.Get(ctx, "r0").Float64()
 	if err != nil || math.IsNaN(r0) {
-		_ = s.SetR0(ctx, 0.5)
-		return 0.5
+		_ = s.SetR0(ctx, 0.2)
+		return 0.2
 	}
 
 	return r0
