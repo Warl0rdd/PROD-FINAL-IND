@@ -2,6 +2,7 @@ package learning
 
 import (
 	"solution/internal/adapters/database/postgres"
+	"solution/internal/adapters/logger"
 	"solution/internal/domain/utils/ads"
 )
 
@@ -28,5 +29,8 @@ func GenNewR0(oldR0 float64, data []postgres.GetImpressionsForLearningRow) float
 		sum *= -10 / float64(len(data))
 	}
 
-	return oldR0 - n*sum
+	newR0 := oldR0 - n*sum
+	logger.Log.Debugf("oldR0: %f, newR0: %f", oldR0, newR0)
+
+	return newR0
 }
