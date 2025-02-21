@@ -30,8 +30,5 @@ COPY --from=builder /opt/bin/application ./
 
 EXPOSE 3000
 
-# Add required static files.
-#COPY assets assets
-
 # Run the application.
 CMD ["sh", "-c", "sleep 2 && ./application"]
