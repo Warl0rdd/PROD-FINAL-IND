@@ -88,7 +88,7 @@ func (h *CampaignHandler) CreateCampaign(c fiber.Ctx) error {
 		attribute.String("endpoint", "/advertisers/{advertiserId}/campaigns"),
 	)
 
-	created, err := h.campaignService.CreateCampaign(ctx, campaignDTO)
+	_, err := h.campaignService.CreateCampaign(ctx, campaignDTO)
 	if err != nil {
 		span.RecordError(err)
 		if errors.Is(err, errorz.BadRequest) {
@@ -104,7 +104,7 @@ func (h *CampaignHandler) CreateCampaign(c fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(created)
+	return c.Status(fiber.StatusCreated).JSON(campaignDTO)
 }
 
 func (h *CampaignHandler) GetCampaignById(c fiber.Ctx) error {

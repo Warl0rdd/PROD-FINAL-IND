@@ -64,6 +64,10 @@ func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.Cr
 		campaignDTO.Targeting.Gender = "ALL"
 	}
 
+	if campaignDTO.ClicksLimit > campaignDTO.ImpressionsLimit {
+		return dto.CampaignDTO{}, errorz.BadRequest
+	}
+
 	created, err := s.campaignStorage.CreateCampaign(ctx, postgres.CreateCampaignParams{
 		AdvertiserID:      uuid.MustParse(campaignDTO.AdvertiserID),
 		ImpressionLimit:   campaignDTO.ImpressionsLimit,
@@ -268,6 +272,18 @@ func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.Up
 	}
 
 	if campaignDTO.Targeting.AgeTo != 0 && campaignDTO.Targeting.AgeTo < campaign.AgeFrom.Int32 {
+		return dto.CampaignDTO{}, errorz.BadRequest
+	}
+
+	if campaignDTO.ClicksLimit != nil && campaignDTO.ImpressionsLimit != nil && *campaignDTO.ClicksLimit > *campaignDTO.ImpressionsLimit {
+		return dto.CampaignDTO{}, errorz.BadRequest
+	}
+
+	if campaignDTO.ClicksLimit != nil && *campaignDTO.ClicksLimit > campaign.ImpressionLimit {
+		return dto.CampaignDTO{}, errorz.BadRequest
+	}
+
+	if campaignDTO.ImpressionsLimit != nil && *campaignDTO.ImpressionsLimit < campaign.ClicksLimit {
 		return dto.CampaignDTO{}, errorz.BadRequest
 	}
 
