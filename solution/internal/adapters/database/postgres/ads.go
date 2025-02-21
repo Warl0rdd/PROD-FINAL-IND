@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/spf13/viper"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"solution/internal/domain/common/errorz"
 )
 
@@ -128,6 +129,11 @@ func (s *adsStorage) GetEligibleAds(ctx context.Context, arg GetEligibleAdsParam
 	tracer := otel.Tracer("ads-storage")
 	ctx, span := tracer.Start(ctx, "ads-storage")
 	defer span.End()
+
+	span.SetAttributes(
+		attribute.String("client_id", arg.ClientID.String()),
+		attribute.Int("day", int(arg.Day)),
+	)
 
 	if viper.GetBool("settings.moderation") {
 		getEligibleAds += " AND c.approved"

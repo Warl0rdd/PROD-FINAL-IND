@@ -48,6 +48,10 @@ func (s *CampaignService) CreateCampaign(ctx context.Context, campaignDTO dto.Cr
 		ageTo = 999
 	}
 
+	if campaignDTO.Targeting.AgeFrom != 0 && campaignDTO.Targeting.AgeTo != 0 && campaignDTO.Targeting.AgeFrom > campaignDTO.Targeting.AgeTo {
+		return dto.CampaignDTO{}, errorz.BadRequest
+	}
+
 	if campaignDTO.StartDate > campaignDTO.EndDate {
 		return dto.CampaignDTO{}, errorz.BadRequest
 	}
@@ -252,6 +256,18 @@ func (s *CampaignService) UpdateCampaign(ctx context.Context, campaignDTO dto.Up
 	}
 
 	if campaignDTO.Targeting.Gender != nil && (*campaignDTO.Targeting.Gender != "MALE" && *campaignDTO.Targeting.Gender != "FEMALE" && *campaignDTO.Targeting.Gender != "ALL") {
+		return dto.CampaignDTO{}, errorz.BadRequest
+	}
+
+	if campaignDTO.Targeting.AgeFrom != 0 && campaignDTO.Targeting.AgeTo != 0 && campaignDTO.Targeting.AgeFrom > campaignDTO.Targeting.AgeTo {
+		return dto.CampaignDTO{}, errorz.BadRequest
+	}
+
+	if campaignDTO.Targeting.AgeFrom != 0 && campaignDTO.Targeting.AgeFrom > campaign.AgeTo.Int32 {
+		return dto.CampaignDTO{}, errorz.BadRequest
+	}
+
+	if campaignDTO.Targeting.AgeTo != 0 && campaignDTO.Targeting.AgeTo < campaign.AgeFrom.Int32 {
 		return dto.CampaignDTO{}, errorz.BadRequest
 	}
 
