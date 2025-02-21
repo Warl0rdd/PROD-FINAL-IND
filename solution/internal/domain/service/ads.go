@@ -110,7 +110,10 @@ func (s *adsService) GetAds(ctx context.Context, adsDTO dto.GetAdsDTO) (dto.AdDT
 		return dto.AdDTO{}, errImp
 	}
 
-	span.SetAttributes(attribute.Float64("score", maxKey))
+	span.SetAttributes(
+		attribute.Float64("score", maxKey),
+		attribute.Int("ads.count", len(ads)),
+	)
 
 	return scores[maxKey], nil
 }

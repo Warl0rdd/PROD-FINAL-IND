@@ -6,3 +6,6 @@ README.md
 compose.yml
 pg-compose.yml
 config
+*.md
+gen
+dashboards
