@@ -9,6 +9,8 @@
   <p align="center">
     Лучший рекламный движок на белом свете
   </p>
+
+[![wakatime](https://wakatime.com/badge/user/26dae072-16af-4b64-b370-476d74b65935/project/8f51bc22-4677-4549-819c-e9f464323f69.svg)](https://wakatime.com/badge/user/26dae072-16af-4b64-b370-476d74b65935/project/8f51bc22-4677-4549-819c-e9f464323f69)
 </div>
 
 
