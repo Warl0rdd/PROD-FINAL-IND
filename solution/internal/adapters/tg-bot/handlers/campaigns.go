@@ -79,8 +79,9 @@ func (h *CampaignHandler) CreateCampaign(traceCtx context.Context, tgCtx tele.Co
 
 	inputCollector := collector.New()
 
+	// Идея с шагами взята изhttps://github.com/Badsnus/cu-clubs-bot/blob/main/bot/internal/adapters/controller/telegram/handlers/clubOwner/clubOwner.go (926 строка)
 	steps := []struct {
-		key         string
+		key         string // Нужно убрать по хорошему, т.к. нигде не используется, но у меня нет времени уже
 		message     string
 		errMessage  string
 		result      *string
