@@ -24,7 +24,7 @@ func GenNewR0(oldR0 float64, data []postgres.GetImpressionsForLearningRow) float
 	if len(data) == 0 {
 		return oldR0
 	} else {
-		sum *= -10 / float64(len(data))
+		sum *= 10 / float64(len(data))
 	}
 
 	newR0 := oldR0 - n*sum
