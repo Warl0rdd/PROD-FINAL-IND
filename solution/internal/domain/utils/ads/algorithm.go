@@ -19,7 +19,7 @@ func AdScore(cpi, cpc, rel, r0 float64) float64 {
 
 func Logistic(x, r0 float64) float64 {
 	// Кф-нт кривизны - чем меньше, тем плавнее будет переход между влиянием цены за показ и цены за клик
-	k := 10.0
+	k := 5.0
 
 	return 1 / (1 + math.Exp(-k*(x-r0)))
 }

@@ -103,3 +103,9 @@ func TestNormalization(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkLogistic(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Logistic(0.6, 0.5)
+	}
+}

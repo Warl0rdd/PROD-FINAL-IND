@@ -14,12 +14,10 @@ func GenNewR0(oldR0 float64, data []postgres.GetImpressionsForLearningRow) float
 	var sum float64
 	for _, item := range data {
 		var trueClick float64
-		switch item.ClickedAfter {
-		case true:
+		if item.ClickedAfter {
 			trueClick = 1.0
-		case false:
-			trueClick = 0.0
 		}
+
 		sum += ads.Logistic(item.Score, oldR0) - trueClick
 	}
 
