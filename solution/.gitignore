@@ -1,7 +1,0 @@
-.idea
-*.exe
-*.dll
-/local-dev-compose.yml
-/.env.local
-/gen
-/grafana_data/

@@ -138,7 +138,7 @@ services:
              mc policy set public myminio/loki"
 
   backend:
-    build: .
+    build: solution
     container_name: backend
     restart: unless-stopped
     env_file:
@@ -151,7 +151,7 @@ services:
 
   migrations:
     build:
-      context: .
+      context: solution
       dockerfile: dockerfiles/goose.Dockerfile
     container_name: migrations
     depends_on:

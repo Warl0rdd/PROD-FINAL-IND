@@ -9,11 +9,11 @@ RUN apk update && apk add ca-certificates git gcc g++ libc-dev binutils
 WORKDIR /opt
 
 # Download dependencies.
-COPY ./go.mod go.sum ./
+COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 
 # Copy application source.
-COPY . .
+COPY solution .
 
 # Build the application.
 RUN go build -o bin/application ./cmd
